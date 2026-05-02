@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { uploadImage, getMyImages } from '../services/images.service';
 import { HttpError } from '../utils/httpError';
 
-export async function uploadHandler(
+export async function  uploadHandler(
   req: Request,
   res: Response,
   next: NextFunction,
@@ -71,6 +71,7 @@ export async function myImagesHandler(
         tags: img.tags,
         mimeType: img.mimeType,
         sizeBytes: img.sizeBytes,
+        storageKey: img.storageKey,
         createdAt: img.createdAt,
         rejectionReason: img.rejectionReason,
       })),

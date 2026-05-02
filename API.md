@@ -307,6 +307,7 @@ List all images uploaded by the authenticated user (all statuses).
 [
   {
     "id": "uuid",
+    "storageKey" : "images/gfwenemle.png",
     "status": "pending",
     "title": "Mountain Sunset",
     "location": "Alps",

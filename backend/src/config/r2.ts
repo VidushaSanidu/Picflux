@@ -1,4 +1,6 @@
 import { S3Client } from '@aws-sdk/client-s3';
+import { NodeHttpHandler } from '@smithy/node-http-handler';
+import https from 'https';
 
 export const r2Client = new S3Client({
   region: 'auto',
@@ -7,6 +9,9 @@ export const r2Client = new S3Client({
     accessKeyId: process.env.R2_ACCESS_KEY_ID!,
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
   },
+  requestHandler: new NodeHttpHandler({
+    httpsAgent: new https.Agent({ keepAlive: false }),
+  }),
 });
 
 export const R2_BUCKET = process.env.R2_BUCKET_NAME!;
