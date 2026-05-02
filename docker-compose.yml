@@ -16,6 +16,20 @@ services:
       timeout: 5s
       retries: 5
 
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-picfluxapp}:${POSTGRES_PASSWORD}@db:5432/picfluxdb
+    command: ["node", "node_modules/typeorm/cli.js", "migration:run", "-d", "dist/config/database.js"]
+
   app:
     build:
       context: ./backend
@@ -24,6 +38,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     env_file:
       - ./backend/.env
     environment:

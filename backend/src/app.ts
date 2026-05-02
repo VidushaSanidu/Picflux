@@ -36,7 +36,7 @@ export function createApp(): express.Application {
   app.use('/images', imagesRoutes);
   app.use('/admin', adminRoutes);
   app.use('/api-keys', apiKeysRoutes);
-  app.use('/api/v1', apiRoutes);
+  app.use('/v1', apiRoutes);
 
   // ─── 404 ──────────────────────────────────────────────────────────────────
   app.use((_req, res) => {

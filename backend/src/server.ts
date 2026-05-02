@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { AppDataSource } from './config/database';
 import { createApp } from './app';
 
-const PORT = parseInt(process.env.PORT ?? '3001', 10);
+const PORT = parseInt(process.env.PORT ?? '4000', 10);
 
 async function bootstrap(): Promise<void> {
   // Initialise TypeORM (creates/syncs tables in dev)
