@@ -1,6 +1,19 @@
 import type { Metadata } from "next";
+import { Space_Grotesk, Syne } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+const syne = Syne({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Picflux — Animal Image Hosting",
@@ -19,7 +32,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${spaceGrotesk.variable} ${syne.variable}`}>
       <body>
         <Providers>{children}</Providers>
       </body>

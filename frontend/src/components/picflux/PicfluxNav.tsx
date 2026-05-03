@@ -26,17 +26,19 @@ export function PicfluxNav() {
           <span className="flex size-10 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-glow transition-transform duration-300 group-hover:rotate-6 group-hover:scale-105">
             <Camera className="size-5" />
           </span>
-          <span className="font-display text-lg font-bold tracking-normal text-foreground">Picflux</span>
+          <span className="hero-gradient-text font-display text-lg font-black tracking-normal">Picflux</span>
         </Link>
         <div className="hidden items-center gap-6 text-sm font-medium text-muted-foreground md:flex">
           <Link href="/explore" className={`transition-colors duration-300 hover:text-foreground ${isActive("/explore") ? "text-foreground" : ""}`}>
             Explore
           </Link>
-          {user && (
-            <Link href="/dashboard" className={`transition-colors duration-300 hover:text-foreground ${isActive("/dashboard") ? "text-foreground" : ""}`}>
-              Dashboard
-            </Link>
-          )}
+          <Link href="/license" className={`transition-colors duration-300 hover:text-foreground ${isActive("/license") ? "text-foreground" : ""}`}>
+            License
+          </Link>
+          <Link href="/about" className={`transition-colors duration-300 hover:text-foreground ${isActive("/about") ? "text-foreground" : ""}`}>
+            About Us
+          </Link>
+          
           {user?.role === "admin" && (
             <Link href="/admin" className={`flex items-center gap-1.5 transition-colors duration-300 hover:text-foreground ${isActive("/admin") ? "text-foreground" : ""}`}>
               <ShieldCheck className="size-3.5 text-neon" /> Admin

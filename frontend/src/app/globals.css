@@ -70,8 +70,8 @@
 }
 
 :root {
-  --font-body: "Space Grotesk", "Satoshi", system-ui, sans-serif;
-  --font-display: "Space Grotesk", "Satoshi", system-ui, sans-serif;
+  --font-body: var(--font-body), "Space Grotesk", system-ui, sans-serif;
+  --font-display: var(--font-display), "Syne", system-ui, sans-serif;
   --radius: 1rem;
   --background: oklch(0.135 0.006 285);
   --foreground: oklch(0.965 0.006 170);
