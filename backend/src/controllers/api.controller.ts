@@ -50,7 +50,7 @@ export async function listImagesHandler(
       limit,
     });
 
-    const topTags = await getTopTags(5);
+    const topTagsRaw = await getTopTags(5);
 
     const publicUrl = process.env.R2_PUBLIC_URL ?? null;
 
@@ -72,7 +72,7 @@ export async function listImagesHandler(
         limit: result.limit,
         pages: Math.ceil(result.total / result.limit),
       },
-      topTags,
+      topTags: topTagsRaw.map((t) => t.tag),
     });
   } catch (err) {
     next(err);

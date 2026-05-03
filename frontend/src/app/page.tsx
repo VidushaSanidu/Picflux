@@ -23,7 +23,7 @@ export default function HomePage() {
       <section className="relative flex min-h-[92vh] items-center px-4 pb-16 pt-32 sm:px-6 lg:px-8">
         <div className="noise-overlay pointer-events-none absolute inset-0" />
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="animate-float-field absolute -right-10 top-24 hidden w-[44rem] columns-2 gap-4 opacity-70 blur-[0.2px] lg:block">
+          <div className="animate-float-field absolute -right-10 top-24 hidden w-176 columns-2 gap-4 opacity-70 blur-[0.2px] lg:block">
             {animalImages.slice(0, 4).map((item, index) => (
               <Image
                 key={item.id}
@@ -64,7 +64,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="relative mx-auto w-full max-w-lg lg:hidden">
-            <Image src={animalImages[2].image} alt="Featured bengal cat animal photograph" width={1024} height={1280} className="h-[30rem] w-full rounded-[2rem] object-cover shadow-glass" />
+            <Image src={animalImages[2].image} alt="Featured bengal cat animal photograph" width={1024} height={1280} className="h-120 w-full rounded-[2rem] object-cover shadow-glass" />
           </div>
         </div>
       </section>

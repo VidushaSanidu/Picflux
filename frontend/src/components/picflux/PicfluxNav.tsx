@@ -38,12 +38,6 @@ export function PicfluxNav() {
           <Link href="/about" className={`transition-colors duration-300 hover:text-foreground ${isActive("/about") ? "text-foreground" : ""}`}>
             About Us
           </Link>
-          
-          {user?.role === "admin" && (
-            <Link href="/admin" className={`flex items-center gap-1.5 transition-colors duration-300 hover:text-foreground ${isActive("/admin") ? "text-foreground" : ""}`}>
-              <ShieldCheck className="size-3.5 text-neon" /> Admin
-            </Link>
-          )}
         </div>
         <div className="flex items-center gap-2">
           {!loading && !user && (
@@ -60,9 +54,6 @@ export function PicfluxNav() {
             <>
               <Button variant="glass" size="sm" asChild className="hidden sm:inline-flex">
                 <Link href="/dashboard"><LayoutDashboard className="size-4" /> Dashboard</Link>
-              </Button>
-              <Button variant="hero" size="sm" asChild>
-                <Link href="/upload"><Upload className="size-4" /> Upload</Link>
               </Button>
               <Button variant="glass" size="sm" onClick={handleLogout} aria-label="Sign out">
                 <LogOut className="size-4" />

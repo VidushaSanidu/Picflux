@@ -38,7 +38,7 @@ export default function DashboardPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <PicfluxNav />
-      <div className="mx-auto max-w-5xl px-4 pb-16 pt-32 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pb-16 pt-32 sm:px-6 lg:px-8">
         <div className="mb-10 animate-soft-rise">
           <p className="text-sm font-bold uppercase text-neon">Dashboard</p>
           <h1 className="mt-2 font-display text-4xl font-black">My account</h1>

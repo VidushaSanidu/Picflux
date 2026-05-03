@@ -49,8 +49,9 @@ export default function RegisterPage() {
             <Link href="/" className="flex size-14 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-glow">
               <Camera className="size-7" />
             </Link>
-            <h1 className="font-display text-3xl font-black text-foreground">Create account</h1>
-            <p className="text-sm text-muted-foreground">Join Picflux to upload and explore</p>
+            <h1 className="hero-gradient-text font-display text-2xl font-black tracking-normal">Picflux</h1>
+            <h1 className="font-display text-3xl font-black text-foreground">Start your own Gallery</h1>
+            <p className="text-sm text-muted-foreground">Join Picflux and explore the animal world.</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
