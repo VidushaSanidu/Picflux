@@ -1,7 +1,7 @@
 import { AppDataSource } from '../config/database';
 import { Image, ImageStatus } from '../entities/Image';
 import { AuditLog, AuditAction } from '../entities/AuditLog';
-import { getPresignedUrl } from './r2.service';
+import { getPresignedUrl, deleteFromR2 } from './r2.service';
 import { HttpError } from '../utils/httpError';
 
 export async function getPendingImages(): Promise<Image[]> {
@@ -108,4 +108,19 @@ export async function setImageFeatured(
   );
 
   return image;
+}
+
+export async function deleteImage(imageId: string, adminId: string): Promise<void> {
+  const imageRepo = AppDataSource.getRepository(Image);
+  const image = await imageRepo.findOne({ where: { id: imageId } });
+
+  if (!image) throw new HttpError(404, 'Image not found');
+
+  await deleteFromR2(image.storageKey);
+  await imageRepo.remove(image);
+
+  const auditRepo = AppDataSource.getRepository(AuditLog);
+  await auditRepo.save(
+    auditRepo.create({ userId: adminId, action: AuditAction.DELETE, imageId }),
+  );
 }

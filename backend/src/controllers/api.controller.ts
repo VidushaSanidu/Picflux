@@ -97,6 +97,7 @@ export async function getImageHandler(
       sizeBytes: image.sizeBytes,
       createdAt: image.createdAt,
       approvedAt: image.approvedAt,
+      featured: image.featured,
       uploader: { id: image.uploader.id, email: image.uploader.email },
       viewUrl,
     });

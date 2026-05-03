@@ -1,22 +1,48 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Download, Loader2, MapPin, Tag } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Calendar, Download, Loader2, MapPin, Shield, Star, StarOff, Tag, Trash2 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { PicfluxNav } from "../../../components/picflux/PicfluxNav";
 import { Button } from "../../../components/ui/button";
 import { apiFetch } from "../../../lib/api";
+import { useAuth } from "../../../context/auth";
 import type { ImageDetail } from "../../../types/api";
 
 export default function ImageDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const { user } = useAuth();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const isAdmin = user?.role === "admin";
 
   const { data: image, isLoading, isError } = useQuery<ImageDetail>({
     queryKey: ["image", id],
     queryFn: () => apiFetch<ImageDetail>(`/v1/images/${id}`),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () =>
+      apiFetch(`/admin/images/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["image", id] });
+      router.push("/explore");
+    },
+  });
+
+  const featuredMutation = useMutation({
+    mutationFn: (featured: boolean) =>
+      apiFetch(`/admin/images/${id}/featured`, {
+        method: "PATCH",
+        body: JSON.stringify({ featured }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["image", id] });
+    },
   });
 
   async function handleDownload() {
@@ -104,15 +130,59 @@ export default function ImageDetailPage({ params }: { params: Promise<{ id: stri
                 <div className="mt-5 space-y-2 border-t border-border pt-4 text-xs text-muted-foreground">
                   <p className="flex items-center gap-2">
                     <Calendar className="size-3.5 text-neon" />
-                    Uploaded {new Date(image.createdAt).toLocaleDateString()}
+                    Published on {new Date(image.createdAt).toLocaleDateString()}
                   </p>
-                  <p>{(image.sizeBytes / 1024).toFixed(0)} KB · {image.mimeType}</p>
+                  <p>Download Size: {(image.sizeBytes / 1024).toFixed(0)} KB · {image.mimeType}</p>
                 </div>
               </div>
 
               <Button variant="hero" size="lg" onClick={handleDownload} className="w-full">
                 <Download /> Download
               </Button>
+
+              {isAdmin && (
+                <div className="glass-panel rounded-3xl p-6">
+                  <h2 className="mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-neon">
+                    <Shield className="size-4" /> Admin Actions
+                  </h2>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start gap-2"
+                      disabled={featuredMutation.isPending}
+                      onClick={() => featuredMutation.mutate(!image.featured)}
+                    >
+                      {featuredMutation.isPending ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : image.featured ? (
+                        <StarOff className="size-4 text-yellow-400" />
+                      ) : (
+                        <Star className="size-4 text-yellow-400" />
+                      )}
+                      {image.featured ? "Unfeature" : "Mark as Featured"}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="w-full justify-start gap-2"
+                      disabled={deleteMutation.isPending}
+                      onClick={() => {
+                        if (confirm("Delete this image permanently? This cannot be undone.")) {
+                          deleteMutation.mutate();
+                        }
+                      }}
+                    >
+                      {deleteMutation.isPending ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="size-4" />
+                      )}
+                      Delete Image
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

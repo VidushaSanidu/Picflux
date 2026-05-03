@@ -5,6 +5,7 @@ import {
   approveImage,
   rejectImage,
   setImageFeatured,
+  deleteImage,
 } from '../services/admin.service';
 import { HttpError } from '../utils/httpError';
 
@@ -82,6 +83,20 @@ export async function rejectHandler(
 
     const image = await rejectImage(req.params.id, req.user.id, rejectionReason);
     res.json({ id: image.id, status: image.status, rejectionReason: image.rejectionReason });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function deleteImageHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    if (!req.user) throw new HttpError(401, 'Authentication required');
+    await deleteImage(req.params.id, req.user.id);
+    res.status(204).send();
   } catch (err) {
     next(err);
   }

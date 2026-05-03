@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Download, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 
 import { ImageCard } from "../../components/picflux/ImageCard";
 import { PicfluxNav } from "../../components/picflux/PicfluxNav";
@@ -12,10 +13,12 @@ import type { ImagesListResponse } from "../../types/api";
 const LIMIT = 20;
 
 export default function ExplorePage() {
-  const [search, setSearch] = useState("");
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") ?? "";
+  const [search, setSearch] = useState(initialQuery);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState(initialQuery);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -51,10 +54,10 @@ export default function ExplorePage() {
         <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl animate-soft-rise">
             <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-glass px-4 py-2 text-sm font-bold text-neon backdrop-blur-xl">
-              <Download className="size-4" /> Public verified feed
+              <Download className="size-4" /> Public Feed
             </p>
             <h1 className="font-display text-4xl font-black tracking-normal sm:text-6xl">Explore animal images</h1>
-            <p className="mt-4 text-lg leading-8 text-muted-foreground">Browse verified animal photography. Click to view details or download instantly.</p>
+            <p className="mt-4 text-lg leading-8 text-muted-foreground">Browse verified animal photography. Click to view details or download.</p>
           </div>
           <div className="glass-panel flex w-full items-center gap-3 rounded-full p-2 lg:max-w-md">
             <Search className="ml-4 size-5 text-muted-foreground" />
@@ -69,7 +72,7 @@ export default function ExplorePage() {
                 <X className="size-4" />
               </button>
             )}
-            <SlidersHorizontal className="mr-4 size-5 text-neon" />
+            {/* <SlidersHorizontal className="mr-4 size-5 text-neon" /> */}
           </div>
         </div>
 

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, CheckCircle2, Download, Mail, MapPin, Search, ShieldCheck, Upload, Users, Zap } from "lucide-react";
+import { ArrowRight, CheckCircle2, Download, Mail, MapPin, ShieldCheck, Upload, Users, Zap } from "lucide-react";
 
 import { animalImages } from "../components/picflux/animalData";
+import { HomeSearchBar } from "../components/picflux/HomeSearchBar";
 import { PicfluxNav } from "../components/picflux/PicfluxNav";
 import { Button } from "../components/ui/button";
 
@@ -47,11 +48,7 @@ export default function HomePage() {
             <p className="mt-7 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
               Explore a curated collection of animal images, upload your own, and integrate with our developer-friendly API for seamless access.
             </p>
-            <div className="glass-panel mt-8 flex max-w-2xl items-center gap-3 rounded-full p-2">
-              <Search className="ml-4 size-5 text-muted-foreground" />
-              <input className="min-w-0 flex-1 bg-transparent py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground" placeholder="Search birds, wild cats, pets, marine life..." />
-              <Button variant="hero">Search</Button>
-            </div>
+            <HomeSearchBar />
             <div className="mt-8 flex flex-wrap gap-3">
               <Button variant="hero" size="lg" asChild>
                 <Link href="/explore">Explore <ArrowRight /></Link>

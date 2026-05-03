@@ -15,6 +15,7 @@ export type PublicImage = {
 export type ImageDetail = PublicImage & {
   approvedAt: string;
   viewUrl: string;
+  featured: boolean;
 };
 
 export type ImagesListResponse = {
