@@ -59,4 +59,7 @@ export class Image {
 
   @Column({ name: 'rejection_reason', nullable: true, type: 'text' })
   rejectionReason!: string | null;
+
+  @Column({ default: false })
+  featured!: boolean;
 }

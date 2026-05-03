@@ -80,3 +80,32 @@ export async function rejectImage(
 
   return image;
 }
+
+export async function setImageFeatured(
+  imageId: string,
+  adminId: string,
+  featured: boolean,
+): Promise<Image> {
+  const imageRepo = AppDataSource.getRepository(Image);
+  const image = await imageRepo.findOne({ where: { id: imageId } });
+
+  if (!image) throw new HttpError(404, 'Image not found');
+  if (image.status !== ImageStatus.APPROVED) {
+    throw new HttpError(409, 'Only approved images can be featured');
+  }
+
+  image.featured = featured;
+  await imageRepo.save(image);
+
+  const auditRepo = AppDataSource.getRepository(AuditLog);
+  await auditRepo.save(
+    auditRepo.create({
+      userId: adminId,
+      action: AuditAction.SET_FEATURED,
+      imageId,
+      metadata: { featured },
+    }),
+  );
+
+  return image;
+}

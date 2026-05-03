@@ -9,6 +9,7 @@ export enum AuditAction {
   REGISTER = 'REGISTER',
   API_KEY_CREATE = 'API_KEY_CREATE',
   API_KEY_REVOKE = 'API_KEY_REVOKE',
+  SET_FEATURED = 'SET_FEATURED',
 }
 
 @Entity('audit_logs')

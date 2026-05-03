@@ -39,13 +39,13 @@ export default function HomePage() {
         <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-[1.02fr_0.98fr]">
           <div className="animate-soft-rise max-w-4xl">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-glass px-4 py-2 text-sm font-semibold text-muted-foreground backdrop-blur-xl">
-              <ShieldCheck className="size-4 text-neon" /> Verified public animal photography
+              <ShieldCheck className="size-4 text-neon" /> Verified Animal Photography
             </div>
             <h1 className="font-display text-5xl font-black leading-[0.95] tracking-normal text-foreground sm:text-7xl lg:text-8xl">
               Discover <span className="hero-gradient-text">Stunning Animal Photography</span>
             </h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
-              Upload freely, browse verified animal images, and plug into a clean API for programmatic uploads, downloads, and curated discovery.
+              Explore a curated collection of animal images, upload your own, and integrate with our developer-friendly API for seamless access.
             </p>
             <div className="glass-panel mt-8 flex max-w-2xl items-center gap-3 rounded-full p-2">
               <Search className="ml-4 size-5 text-muted-foreground" />

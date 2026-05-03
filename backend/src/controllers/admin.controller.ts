@@ -4,6 +4,7 @@ import {
   getPendingImageById,
   approveImage,
   rejectImage,
+  setImageFeatured,
 } from '../services/admin.service';
 import { HttpError } from '../utils/httpError';
 
@@ -81,6 +82,26 @@ export async function rejectHandler(
 
     const image = await rejectImage(req.params.id, req.user.id, rejectionReason);
     res.json({ id: image.id, status: image.status, rejectionReason: image.rejectionReason });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function setFeaturedHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    if (!req.user) throw new HttpError(401, 'Authentication required');
+
+    const { featured } = req.body as { featured?: unknown };
+    if (typeof featured !== 'boolean') {
+      throw new HttpError(400, '"featured" must be a boolean');
+    }
+
+    const image = await setImageFeatured(req.params.id, req.user.id, featured);
+    res.json({ id: image.id, featured: image.featured });
   } catch (err) {
     next(err);
   }
