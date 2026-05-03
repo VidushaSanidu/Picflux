@@ -56,8 +56,10 @@ export default function HomePage() {
               <Button variant="hero" size="lg" asChild>
                 <Link href="/explore">Explore <ArrowRight /></Link>
               </Button>
-              <Button variant="glass" size="lg">
-                <Upload /> Upload
+              <Button variant="glass" size="lg" asChild>
+                <Link href="/upload">
+                  <Upload /> Upload
+                </Link>
               </Button>
             </div>
           </div>

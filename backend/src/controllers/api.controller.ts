@@ -52,6 +52,8 @@ export async function listImagesHandler(
 
     const topTags = await getTopTags(5);
 
+    const publicUrl = process.env.R2_PUBLIC_URL ?? null;
+
     res.json({
       data: result.images.map((img) => ({
         id: img.id,
@@ -61,6 +63,7 @@ export async function listImagesHandler(
         mimeType: img.mimeType,
         sizeBytes: img.sizeBytes,
         createdAt: img.createdAt,
+        thumbnailUrl: publicUrl ? `${publicUrl}/${img.storageKey}` : null,
         uploader: { id: img.uploader.id, email: img.uploader.email },
       })),
       pagination: {

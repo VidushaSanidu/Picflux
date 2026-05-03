@@ -1,6 +1,7 @@
 # Picflux API Reference
 
 **Base URL:** `http://localhost:4000`
+Image public url: R2_PUBLIC_URL
 
 ---
 
