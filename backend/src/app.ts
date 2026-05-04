@@ -13,10 +13,10 @@ export function createApp(): express.Application {
   const app = express();
 
   // ─── Security / CORS ──────────────────────────────────────────────────────
-  const allowedOrigin = process.env.FRONTEND_ORIGIN ?? 'http://localhost:3000';
+  const allowedOrigins = (process.env.FRONTEND_ORIGIN ?? '').split(',').map(o => o.trim()).filter(Boolean);
   app.use(
     cors({
-      origin: allowedOrigin,
+      origin: allowedOrigins.length === 1 ? allowedOrigins[0] : allowedOrigins,
       credentials: true, // required for httpOnly cookie exchange
     }),
   );
