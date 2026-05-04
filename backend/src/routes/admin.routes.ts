@@ -4,6 +4,8 @@ import {
   getPendingHandler,
   approveHandler,
   rejectHandler,
+  setFeaturedHandler,
+  deleteImageHandler,
 } from '../controllers/admin.controller';
 import { jwtAuth } from '../middleware/jwtAuth';
 import { requireRole } from '../middleware/requireRole';
@@ -18,5 +20,7 @@ router.get('/images/pending', listPendingHandler);
 router.get('/images/:id', getPendingHandler);
 router.patch('/images/:id/approve', approveHandler);
 router.patch('/images/:id/reject', rejectHandler);
+router.patch('/images/:id/featured', setFeaturedHandler);
+router.delete('/images/:id', deleteImageHandler);
 
 export default router;

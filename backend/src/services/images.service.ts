@@ -36,7 +36,7 @@ export async function uploadImage(
   await checkAndIncrementUpload(userId, source);
 
   const ext = mimeToExt(input.mimeType);
-  const storageKey = `images/${userId}/${uuidv4()}.${ext}`;
+  const storageKey = `images/${uuidv4()}.${ext}`;
 
   await uploadToR2(storageKey, input.buffer, input.mimeType);
 

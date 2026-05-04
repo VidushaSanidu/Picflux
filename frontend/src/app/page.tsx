@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, CheckCircle2, Download, Mail, MapPin, Search, ShieldCheck, Upload, Users, Zap } from "lucide-react";
+import { ArrowRight, CheckCircle2, Download, Mail, MapPin, ShieldCheck, Upload, Users, Zap } from "lucide-react";
 
 import { animalImages } from "../components/picflux/animalData";
+import { HomeSearchBar } from "../components/picflux/HomeSearchBar";
 import { PicfluxNav } from "../components/picflux/PicfluxNav";
 import { Button } from "../components/ui/button";
 
@@ -23,7 +24,7 @@ export default function HomePage() {
       <section className="relative flex min-h-[92vh] items-center px-4 pb-16 pt-32 sm:px-6 lg:px-8">
         <div className="noise-overlay pointer-events-none absolute inset-0" />
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="animate-float-field absolute -right-10 top-24 hidden w-[44rem] columns-2 gap-4 opacity-70 blur-[0.2px] lg:block">
+          <div className="animate-float-field absolute -right-10 top-24 hidden w-176 columns-2 gap-4 opacity-70 blur-[0.2px] lg:block">
             {animalImages.slice(0, 4).map((item, index) => (
               <Image
                 key={item.id}
@@ -39,30 +40,28 @@ export default function HomePage() {
         <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-[1.02fr_0.98fr]">
           <div className="animate-soft-rise max-w-4xl">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-glass px-4 py-2 text-sm font-semibold text-muted-foreground backdrop-blur-xl">
-              <ShieldCheck className="size-4 text-neon" /> Verified public animal photography
+              <ShieldCheck className="size-4 text-neon" /> Verified Animal Photography
             </div>
             <h1 className="font-display text-5xl font-black leading-[0.95] tracking-normal text-foreground sm:text-7xl lg:text-8xl">
               Discover <span className="hero-gradient-text">Stunning Animal Photography</span>
             </h1>
             <p className="mt-7 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
-              Upload freely, browse verified animal images, and plug into a clean API for programmatic uploads, downloads, and curated discovery.
+              Explore a curated collection of animal images, upload your own, and integrate with our developer-friendly API for seamless access.
             </p>
-            <div className="glass-panel mt-8 flex max-w-2xl items-center gap-3 rounded-full p-2">
-              <Search className="ml-4 size-5 text-muted-foreground" />
-              <input className="min-w-0 flex-1 bg-transparent py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground" placeholder="Search birds, wild cats, pets, marine life..." />
-              <Button variant="hero">Search</Button>
-            </div>
+            <HomeSearchBar />
             <div className="mt-8 flex flex-wrap gap-3">
               <Button variant="hero" size="lg" asChild>
                 <Link href="/explore">Explore <ArrowRight /></Link>
               </Button>
-              <Button variant="glass" size="lg">
-                <Upload /> Upload
+              <Button variant="glass" size="lg" asChild>
+                <Link href="/upload">
+                  <Upload /> Upload
+                </Link>
               </Button>
             </div>
           </div>
           <div className="relative mx-auto w-full max-w-lg lg:hidden">
-            <Image src={animalImages[2].image} alt="Featured bengal cat animal photograph" width={1024} height={1280} className="h-[30rem] w-full rounded-[2rem] object-cover shadow-glass" />
+            <Image src={animalImages[2].image} alt="Featured bengal cat animal photograph" width={1024} height={1280} className="h-120 w-full rounded-[2rem] object-cover shadow-glass" />
           </div>
         </div>
       </section>

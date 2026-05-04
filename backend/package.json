@@ -7,7 +7,13 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "start:dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "migration:generate": "f(){ typeorm-ts-node-commonjs migration:generate -d src/config/database.ts \"src/migrations/${1:?Usage: npm run migration:generate -- MigrationName}\"; }; f",
+    "migration:create": "f(){ typeorm migration:create \"src/migrations/${1:?Usage: npm run migration:create -- MigrationName}\"; }; f",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/config/database.ts",
+    "migration:run:prod": "typeorm migration:run -d dist/config/database.js",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/config/database.ts",
+    "migration:show": "typeorm-ts-node-commonjs migration:show -d src/config/database.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.478.0",

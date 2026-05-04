@@ -28,6 +28,15 @@ export async function registerHandler(
       throw new HttpError(400, 'email and password are required');
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new HttpError(400, 'Invalid email address');
+    }
+
+    if (password.length < 8) {
+      throw new HttpError(400, 'Password must be at least 8 characters');
+    }
+
     const user = await register(email, password);
     const token = signToken(user.id, user.role);
     setAuthCookie(res, token);
@@ -48,6 +57,15 @@ export async function loginHandler(
 
     if (typeof email !== 'string' || typeof password !== 'string') {
       throw new HttpError(400, 'email and password are required');
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new HttpError(400, 'Invalid email address');
+    }
+
+    if (password.length < 8) {
+      throw new HttpError(400, 'Password must be at least 8 characters');
     }
 
     const user = await login(email, password);
