@@ -18,7 +18,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           source: "."
-          target: "/home/${{ secrets.VPS_USER }}/studentmoves-app"
+          target: "/home/${{ secrets.VPS_USER }}/picflux"
 
       - name: SSH and Deploy
         uses: appleboy/ssh-action@master
@@ -27,8 +27,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /home/${{ secrets.VPS_USER }}/studentmoves-app
+            cd /home/${{ secrets.VPS_USER }}/picflux
             docker-compose down
-            docker-compose build
-            docker-compose run --rm merchant-migrator
+            docker-compose build --no-cache
             docker-compose up -d
