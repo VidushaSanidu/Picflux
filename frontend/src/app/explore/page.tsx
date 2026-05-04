@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { Download, Loader2, Search, SlidersHorizontal, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
@@ -12,7 +12,7 @@ import type { ImagesListResponse } from "../../types/api";
 
 const LIMIT = 20;
 
-export default function ExplorePage() {
+function ExploreContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") ?? "";
   const [search, setSearch] = useState(initialQuery);
@@ -150,5 +150,13 @@ export default function ExplorePage() {
         )}
       </section>
     </main>
+  );
+}
+
+export default function ExplorePage() {
+  return (
+    <Suspense>
+      <ExploreContent />
+    </Suspense>
   );
 }
