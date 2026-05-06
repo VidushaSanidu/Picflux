@@ -87,7 +87,7 @@ export default function ApiDocsPage() {
         <p className="text-xs font-bold uppercase tracking-wider text-neon">API</p>
         <h1 className="mt-1 font-display text-3xl font-black">Documentation</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Base URL: <code className="text-neon">http://api.picflux.io</code>
+          Base URL: <code className="text-neon">https://api.picflux.io</code>
         </p>
       </div>
 
@@ -130,7 +130,7 @@ export default function ApiDocsPage() {
           <div className="mt-4">
             <p className="mb-2 text-xs font-semibold text-muted-foreground">Example</p>
             <DocCode
-              code={`curl -X POST http://api.picflux.io/api/v1/images \\
+              code={`curl -X POST https://api.picflux.io/api/v1/images \\
   -H "Authorization: Bearer pfx_xxxxxxxxxxxx" \\
   -F "image=@photo.jpg" \\
   -F "title=Mountain Sunset" \\
