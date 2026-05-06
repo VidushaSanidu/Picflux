@@ -67,6 +67,7 @@ export interface ListImagesQuery {
   tags?: string[];
   page?: number;
   limit?: number;
+  featured?: boolean;
 }
 
 export async function getApprovedImages(
@@ -89,6 +90,10 @@ export async function getApprovedImages(
   if (query.tags && query.tags.length > 0) {
     // PostgreSQL array containment: image must have ALL requested tags
     qb.andWhere('image.tags @> :tags', { tags: query.tags });
+  }
+
+  if (query.featured !== undefined) {
+    qb.andWhere('image.featured = :featured', { featured: query.featured });
   }
 
   const [images, total] = await qb

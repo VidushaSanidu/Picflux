@@ -26,7 +26,7 @@ export async function listImagesHandler(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { q, tags: rawTags, page: rawPage, limit: rawLimit } = req.query;
+    const { q, tags: rawTags, page: rawPage, limit: rawLimit, featured: rawFeatured } = req.query;
 
     const tags =
       typeof rawTags === 'string'
@@ -43,11 +43,15 @@ export async function listImagesHandler(
       throw new HttpError(400, 'limit must be between 1 and 100');
     }
 
+    const featured =
+      rawFeatured === 'true' ? true : rawFeatured === 'false' ? false : undefined;
+
     const result = await getApprovedImages({
       q: typeof q === 'string' ? q : undefined,
       tags,
       page,
       limit,
+      featured,
     });
 
     const topTagsRaw = await getTopTags(5);
@@ -64,6 +68,7 @@ export async function listImagesHandler(
         sizeBytes: img.sizeBytes,
         createdAt: img.createdAt,
         thumbnailUrl: publicUrl ? `${publicUrl}/${img.storageKey}` : null,
+        featured: img.featured,
         uploader: { id: img.uploader.id, email: img.uploader.email },
       })),
       pagination: {

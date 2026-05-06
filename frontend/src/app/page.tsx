@@ -7,6 +7,7 @@ import { animalImages } from "../components/picflux/animalData";
 import { HomeSearchBar } from "../components/picflux/HomeSearchBar";
 import { PicfluxNav } from "../components/picflux/PicfluxNav";
 import { Button } from "../components/ui/button";
+import type { ImagesListResponse } from "../types/api";
 
 export const metadata: Metadata = {
   title: "Picflux — Animal Image Hosting",
@@ -17,7 +18,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
+async function getFeaturedImages() {
+  const apiBase = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+  try {
+    const res = await fetch(`${apiBase}/v1/images?featured=true&limit=3`, { next: { revalidate: 60 } });
+    if (!res.ok) return [];
+    const data: ImagesListResponse = await res.json();
+    return data.data;
+  } catch {
+    return [];
+  }
+}
+
+export default async function HomePage() {
+  const featuredImages = await getFeaturedImages();
   return (
     <main className="min-h-screen overflow-hidden bg-background text-foreground">
       <PicfluxNav />
@@ -69,14 +83,30 @@ export default function HomePage() {
         <div className="mx-auto mb-8 flex max-w-7xl flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-sm font-bold uppercase text-neon">Featured gallery</p>
-            <h2 className="mt-2 text-3xl font-black text-foreground sm:text-4xl">Verified animal images ready to explore.</h2>
+            <h2 className="mt-2 text-3xl font-black text-foreground sm:text-4xl"> Featuring Images From Our Community</h2>
           </div>
           <Button variant="glass" asChild>
             <Link href="/explore">View all <ArrowRight /></Link>
           </Button>
         </div>
         <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-3">
-          {animalImages.slice(0, 3).map((item) => (
+          {featuredImages.length > 0 ? featuredImages.map((item) => (
+            <article key={item.id} className="group overflow-hidden rounded-3xl border border-border bg-card shadow-glass transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-glow">
+              <div className="relative h-80 overflow-hidden">
+                {item.thumbnailUrl && (
+                  <Image src={item.thumbnailUrl} alt={`${item.title ?? "Animal photograph"} by ${item.uploader.email}`} width={1024} height={1280} loading="lazy" className="h-full w-full object-cover opacity-95 transition duration-300 ease-in-out group-hover:scale-105 group-hover:opacity-100" />
+                )}
+                <div className="absolute inset-0 bg-linear-to-t from-background via-background/10 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-5">
+                  <div>
+                    <p className="text-lg font-bold text-foreground">{item.title ?? "Untitled"}</p>
+                    <p className="text-sm text-muted-foreground">by {item.uploader.email}</p>
+                  </div>
+                  {item.tags[0] && <span className="rounded-full border border-border bg-glass px-3 py-1 text-xs font-bold uppercase text-neon backdrop-blur-xl">{item.tags[0]}</span>}
+                </div>
+              </div>
+            </article>
+          )) : animalImages.slice(0, 3).map((item) => (
             <article key={item.id} className="group overflow-hidden rounded-3xl border border-border bg-card shadow-glass transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-glow">
               <div className="relative h-80 overflow-hidden">
                 <Image src={item.image} alt={`${item.title} animal photograph by ${item.photographer}`} width={1024} height={1280} loading="lazy" className="h-full w-full object-cover opacity-95 transition duration-300 ease-in-out group-hover:scale-105 group-hover:opacity-100" />
@@ -93,33 +123,11 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-      <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-8 max-w-7xl">
-          <p className="text-sm font-bold uppercase text-neon">Team</p>
-          <h2 className="mt-2 text-3xl font-black text-foreground sm:text-4xl">Built by image, moderation, and API specialists.</h2>
-        </div>
-        <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-3">
-          {[
-            ["Mira Chen", "Curation Lead", "Guides animal image standards and public gallery quality."],
-            ["Jon Bell", "Platform Engineer", "Builds secure API key workflows for uploads and downloads."],
-            ["Aya Morgan", "Trust Reviewer", "Reviews new submissions before they reach Explore."],
-          ].map(([name, role, bio]) => (
-            <article key={name} className="glass-panel rounded-3xl p-6 transition-transform duration-300 hover:-translate-y-1">
-              <div className="mb-6 flex size-14 items-center justify-center rounded-2xl bg-muted text-neon">
-                <Users className="size-7" />
-              </div>
-              <h3 className="text-xl font-bold text-foreground">{name}</h3>
-              <p className="mt-1 text-sm font-semibold uppercase text-neon">{role}</p>
-              <p className="mt-4 leading-7 text-muted-foreground">{bio}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-      <section className="px-4 pb-20 sm:px-6 lg:px-8">
+       <section className="px-4 pb-20 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-5 rounded-[2rem] border border-border bg-card p-6 shadow-glass md:grid-cols-[1fr_1.2fr] md:p-8">
           <div>
             <p className="text-sm font-bold uppercase text-neon">Contact</p>
-            <h2 className="mt-2 text-3xl font-black text-foreground">Partner with picflux.</h2>
+            <h2 className="mt-2 text-3xl font-black text-foreground">Partner with picflux!</h2>
             <p className="mt-4 leading-7 text-muted-foreground">Reach out for API access, moderation questions, or image hosting support.</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -137,6 +145,29 @@ export default function HomePage() {
         </div>
       </section>
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
+        <div className="mx-auto mb-8 max-w-7xl">
+          <p className="text-sm font-bold uppercase text-neon">Team</p>
+          <h2 className="mt-2 text-3xl font-black text-foreground sm:text-4xl">Built by image, moderation, and API specialists.</h2>
+        </div>
+        <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-3">
+          {[
+            ["Koyuki Nakamori", "Co-Founder & CEO", "Guides animal image standards and public gallery quality."],
+            ["Jeffrey Lamb", "Co-Founder & CTO", "Lead the development of our image hosting infrastructure and API services."],
+            ["Vadym Shakuro", "Co-Founder & AI Advisor", "Reviews new submissions before they reach Explore."],
+          ].map(([name, role, bio]) => (
+            <article key={name} className="glass-panel rounded-3xl p-6 transition-transform duration-300 hover:-translate-y-1">
+              <div className="mb-6 flex size-14 items-center justify-center rounded-2xl bg-muted text-neon">
+                <Users className="size-7" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground">{name}</h3>
+              <p className="mt-1 text-sm font-semibold uppercase text-neon">{role}</p>
+              <p className="mt-4 leading-7 text-muted-foreground">{bio}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+     
+      <section className="px-4 pb-20 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-3">
           {[
             [ShieldCheck, "Verification queue", "New uploads stay private until admins approve them for the public feed."],
@@ -149,19 +180,6 @@ export default function HomePage() {
               <p className="mt-3 leading-7 text-muted-foreground">{body as string}</p>
             </article>
           ))}
-        </div>
-      </section>
-      <section className="px-4 pb-24 sm:px-6 lg:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col gap-8 rounded-[2rem] border border-border bg-card p-6 shadow-glass md:flex-row md:items-center md:justify-between md:p-8">
-          <div>
-            <p className="text-sm font-bold uppercase text-neon">Moderated by design</p>
-            <h2 className="mt-2 text-3xl font-black text-foreground">Only approved uploads reach Explore.</h2>
-          </div>
-          <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
-            {"Upload Review Publish".split(" ").map((step) => (
-              <span key={step} className="inline-flex items-center gap-2 rounded-full bg-muted px-4 py-3"><CheckCircle2 className="size-4 text-neon" />{step}</span>
-            ))}
-          </div>
         </div>
       </section>
     </main>

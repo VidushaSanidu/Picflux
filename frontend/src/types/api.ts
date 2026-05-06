@@ -9,6 +9,7 @@ export type PublicImage = {
   sizeBytes: number;
   createdAt: string;
   thumbnailUrl: string | null;
+  featured: boolean;
   uploader: { id: string; email: string };
 };
 
