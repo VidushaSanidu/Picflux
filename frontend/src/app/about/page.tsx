@@ -39,7 +39,7 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <PicfluxNav />
-      <div className="mx-auto max-w-4xl px-4 pb-24 pt-32 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 pb-24 pt-32 sm:px-6">
         {/* Hero */}
         <div className="mb-16 text-center">
           <div className="mb-6 inline-flex size-16 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-glow">

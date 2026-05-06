@@ -83,6 +83,25 @@ export default function UploadPage() {
 
   if (!user) return null;
 
+  if (user.role !== "admin") {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background px-4">
+        <PicfluxNav />
+        <div className="glass-panel mt-16 w-full max-w-md rounded-3xl p-8 text-center">
+          <h2 className="font-display text-2xl font-black text-foreground">Uploads restricted</h2>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Image uploads are currently limited to admins only.
+          </p>
+          <div className="mt-6">
+            <Button variant="glass" asChild>
+              <Link href="/dashboard">Back to dashboard</Link>
+            </Button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (uploaded) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-background px-4">
