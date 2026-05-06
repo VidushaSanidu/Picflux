@@ -143,7 +143,7 @@ export default function ApiDocsPage() {
           method="GET"
           path="/api/v1/images/:id/download"
           auth="API key"
-          description="Returns a presigned download URL for the specified image. Rate limits are bypassed for API key holders."
+          description="Returns a presigned download URL for the specified image. Rate limits are applied for API key holders."
         />
       </div>
     </section>
