@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
+import passport from '../config/passport';
 import { register, login } from '../services/auth.service';
 import { signToken } from '../utils/jwt';
 import { HttpError } from '../utils/httpError';
+import { User } from '../entities/User';
 
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
 
@@ -14,6 +16,10 @@ function setAuthCookie(res: Response, token: string): void {
     maxAge: COOKIE_MAX_AGE,
     path: '/',
   });
+}
+
+function getFrontendOrigin(): string {
+  return (process.env.FRONTEND_ORIGIN ?? 'http://localhost:3000').split(',')[0].trim();
 }
 
 export async function registerHandler(
@@ -86,4 +92,29 @@ export function logoutHandler(req: Request, res: Response): void {
 export function meHandler(req: Request, res: Response): void {
   // req.user is guaranteed by jwtAuth middleware
   res.json(req.user);
+}
+
+// ─── Google OAuth ─────────────────────────────────────────────────────────────
+
+export const googleInitHandler = passport.authenticate('google', {
+  scope: ['email', 'profile'],
+  session: false,
+});
+
+export function googleCallbackHandler(req: Request, res: Response, next: NextFunction): void {
+  const frontendOrigin = getFrontendOrigin();
+
+  passport.authenticate(
+    'google',
+    { session: false, failureRedirect: `${frontendOrigin}/login?error=oauth_failed` },
+    (err: Error | null, user: User | false) => {
+      if (err || !user) {
+        res.redirect(`${frontendOrigin}/login?error=oauth_failed`);
+        return;
+      }
+      const token = signToken(user.id, user.role);
+      setAuthCookie(res, token);
+      res.redirect(`${frontendOrigin}/dashboard`);
+    },
+  )(req, res, next);
 }
