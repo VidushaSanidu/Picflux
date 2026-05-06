@@ -75,6 +75,20 @@ export default function UploadPage() {
 
   if (!user) return null;
 
+  if (user.role !== "admin") {
+    return (
+      <section className="flex flex-col items-center py-16 text-center">
+        <h2 className="font-display text-2xl font-black text-foreground">Uploads restricted</h2>
+        <p className="mt-3 max-w-sm text-sm text-muted-foreground">
+          Image uploads are currently limited to admins only.
+        </p>
+        <Button variant="glass" className="mt-6" onClick={() => router.push("/dashboard")}>
+          Back to dashboard
+        </Button>
+      </section>
+    );
+  }
+
   if (uploaded) {
     return (
       <section className="flex flex-col items-center py-16 text-center">
