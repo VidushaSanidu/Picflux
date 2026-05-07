@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, CheckCircle2, Download, Mail, MapPin, ShieldCheck, Upload, Users, Zap } from "lucide-react";
+import { ArrowRight, Download, Mail, MapPin, ShieldCheck, Upload, Users, Zap } from "lucide-react";
 
 import { animalImages } from "../components/picflux/animalData";
 import { HomeSearchBar } from "../components/picflux/HomeSearchBar";

@@ -55,6 +55,9 @@ export function PicfluxNav() {
               <Button variant="glass" size="sm" asChild className="hidden sm:inline-flex">
                 <Link href="/dashboard"><LayoutDashboard className="size-4" /> Dashboard</Link>
               </Button>
+              <Button variant="glass" size="icon" asChild className="sm:hidden" aria-label="Dashboard">
+                <Link href="/dashboard"><LayoutDashboard className="size-4" /></Link>
+              </Button>
               <Button variant="glass" size="sm" onClick={handleLogout} aria-label="Sign out">
                 <LogOut className="size-4" />
               </Button>
