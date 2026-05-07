@@ -68,7 +68,7 @@ export default async function HomePage() {
                 <Link href="/explore">Explore <ArrowRight /></Link>
               </Button>
               <Button variant="glass" size="lg" asChild>
-                <Link href="/upload">
+                <Link href="/dashboard/upload">
                   <Upload /> Upload
                 </Link>
               </Button>
