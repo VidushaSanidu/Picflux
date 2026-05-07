@@ -11,7 +11,7 @@ export default function LicensePage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <PicfluxNav />
-      <div className="mx-auto max-w-5xl px-4 pb-24 pt-32 sm:px-6">
+      <div className="mx-auto max-w-5xl px-4 pb-24 pt-32 sm:px-6 lg:px-8">
         <h1 className="font-display mb-2 text-4xl font-bold tracking-tight">License</h1>
         <p className="mb-10 text-sm text-muted-foreground">Last updated: May 3, 2026</p>
 
@@ -63,7 +63,7 @@ export default function LicensePage() {
             <p>
               Questions regarding this license may be directed to{" "}
               <a href="mailto:legal@picflux.app" className="text-foreground underline underline-offset-4 hover:text-neon">
-                legal@picflux.app
+                legal@picflux.io
               </a>
               .
             </p>

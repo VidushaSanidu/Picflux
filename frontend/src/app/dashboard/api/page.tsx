@@ -49,8 +49,16 @@ export default function ApiKeysPage() {
         <p className="text-xs font-bold uppercase tracking-wider text-neon">API</p>
         <h1 className="mt-1 font-display text-3xl font-black">API Keys</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Use these keys for programmatic uploads via{" "}
-          <code className="text-neon">Authorization: Bearer &lt;key&gt;</code>
+         Read the Documentation to get started with the API:{" "}
+          <a
+            href="https://docs.picflux.io/api"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground underline underline-offset-4 hover:text-neon"
+          >
+            Documentation
+          </a>
+          .
         </p>
       </div>
 

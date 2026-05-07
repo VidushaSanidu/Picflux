@@ -18,7 +18,7 @@ export function ImageCard({ item, priority = false }: { item: PublicImage; prior
               fill
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               priority={priority}
-              className="object-cover opacity-95 transition duration-300 ease-in-out group-hover:scale-105 group-hover:opacity-100"
+              className="object-cover h-full opacity-95 transition duration-300 ease-in-out group-hover:scale-105 group-hover:opacity-100"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-card text-muted-foreground text-sm">

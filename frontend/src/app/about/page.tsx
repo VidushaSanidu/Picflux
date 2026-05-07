@@ -39,7 +39,7 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <PicfluxNav />
-      <div className="mx-auto max-w-7xl px-4 pb-24 pt-32 sm:px-6">
+      <div className="mx-auto max-w-7xl px-4 pb-24 pt-32 sm:px-6 lg:px-8">
         {/* Hero */}
         <div className="mb-16 text-center">
           <div className="mb-6 inline-flex size-16 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-glow">
@@ -87,7 +87,7 @@ export default function AboutPage() {
             Picflux is built by a small, passionate team of developers and photographers. We care deeply about performance,
             simplicity, and the images themselves. If you have questions, ideas, or just want to say hi, reach out at{" "}
             <a href="mailto:hello@picflux.app" className="text-foreground underline underline-offset-4 hover:text-neon">
-              hello@picflux.app
+              hello@picflux.io
             </a>
             .
           </p>

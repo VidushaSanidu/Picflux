@@ -35,7 +35,7 @@ export default async function HomePage() {
   return (
     <main className="min-h-screen overflow-hidden bg-background text-foreground">
       <PicfluxNav />
-      <section className="relative flex min-h-[92vh] items-center px-4 pb-16 pt-32 sm:px-6 lg:px-8">
+      <section className="mx-auto relative flex min-h-[92vh] items-center px-4 pb-16 pt-32 sm:px-6 lg:px-8">
         <div className="noise-overlay pointer-events-none absolute inset-0" />
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="animate-float-field absolute -right-10 top-24 hidden w-176 columns-2 gap-4 opacity-70 blur-[0.2px] lg:block">

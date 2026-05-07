@@ -20,7 +20,7 @@ export function PicfluxNav() {
   const isActive = (href: string) => pathname === href;
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 px-4 py-4 sm:px-6">
+    <header className="fixed inset-x-0 top-0 z-50 px-4 py-4 sm:px-6 lg:px-8">
       <nav className="glass-panel mx-auto flex max-w-7xl items-center justify-between rounded-full px-4 py-3">
         <Link href="/" className="group flex items-center gap-3" aria-label="picflux home">
           <span className="flex size-10 items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-glow transition-transform duration-300 group-hover:rotate-6 group-hover:scale-105">

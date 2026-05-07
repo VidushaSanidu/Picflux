@@ -115,7 +115,7 @@ export default function ApiDocsPage() {
 
         <DocEndpoint
           method="POST"
-          path="/api/v1/images"
+          path="/v1/images"
           auth="API key"
           description="Upload an image programmatically. The image is stored with pending status until an admin approves it."
         >
@@ -130,7 +130,7 @@ export default function ApiDocsPage() {
           <div className="mt-4">
             <p className="mb-2 text-xs font-semibold text-muted-foreground">Example</p>
             <DocCode
-              code={`curl -X POST https://api.picflux.io/api/v1/images \\
+              code={`curl -X POST https://api.picflux.io/v1/images \\
   -H "Authorization: Bearer pfx_xxxxxxxxxxxx" \\
   -F "image=@photo.jpg" \\
   -F "title=Mountain Sunset" \\
@@ -141,7 +141,7 @@ export default function ApiDocsPage() {
 
         <DocEndpoint
           method="GET"
-          path="/api/v1/images/:id/download"
+          path="/v1/images/:id/download"
           auth="API key"
           description="Returns a presigned download URL for the specified image. Rate limits are applied for API key holders."
         />
