@@ -623,11 +623,7 @@ Common HTTP status codes used across the API:
 
 # PRB API Reference
 
-**Base URL:** `http://localhost:4001`
-
-This is a separate backend service for perturbation job processing. It shares the same PostgreSQL database and Cloudflare R2 bucket as the main Picflux backend.
-
----
+**Base URL:** `https://api.perturbai.io`
 
 ## Authentication
 
@@ -653,8 +649,6 @@ System health check.
 ---
 
 ## `POST /jobs`
-
-Upload an image and create a new processing job. The job is created immediately with the user image stored in R2. All result fields are `null` until updated via `PATCH /jobs/:id`.
 
 **Auth:** None (public)
 

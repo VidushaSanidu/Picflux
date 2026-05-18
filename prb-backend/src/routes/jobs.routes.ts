@@ -1,6 +1,9 @@
 import { Router } from 'express';
-import { apiKeyAuth } from '../middleware/apiKeyAuth';
+import { jwtAuth } from '../middleware/jwtAuth';
+import { requireRole } from '../middleware/requireRole';
+import { apiKeyOrAdmin } from '../middleware/apiKeyOrAdmin';
 import { requireImageUpload, optionalProcessedImageUpload } from '../middleware/uploadMiddleware';
+import { PrbUserRole } from '../entities/User';
 import {
   createJobHandler,
   listJobsHandler,
@@ -10,16 +13,16 @@ import {
 
 const router = Router();
 
-/** POST /jobs — public; upload user image and create a job */
-router.post('/', requireImageUpload, createJobHandler);
+/** POST /jobs — granted or admin only; upload user image and create a job */
+router.post('/', jwtAuth, requireRole(PrbUserRole.GRANTED, PrbUserRole.ADMIN), requireImageUpload, createJobHandler);
 
-/** GET /jobs — API key required; list all jobs */
-router.get('/', apiKeyAuth, listJobsHandler);
+/** GET /jobs — API key or admin JWT required; list all jobs */
+router.get('/', apiKeyOrAdmin, listJobsHandler);
 
-/** GET /jobs/:id — public; get a single job by ID */
-router.get('/:id', getJobHandler);
+/** GET /jobs/:id — API key or admin JWT required; get a single job by ID */
+router.get('/:id', apiKeyOrAdmin, getJobHandler);
 
-/** PATCH /jobs/:id — API key required; update job with result data */
-router.patch('/:id', apiKeyAuth, optionalProcessedImageUpload, updateJobHandler);
+/** PATCH /jobs/:id — API key or admin JWT required; update job with result data */
+router.patch('/:id', apiKeyOrAdmin, optionalProcessedImageUpload, updateJobHandler);
 
 export default router;

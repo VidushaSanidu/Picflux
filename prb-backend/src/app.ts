@@ -1,6 +1,11 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import passport from 'passport';
+import './config/passport'; // register strategies (side-effect)
 import jobsRoutes from './routes/jobs.routes';
+import authRoutes from './routes/auth.routes';
+import usersRoutes from './routes/users.routes';
 import { HttpError } from './utils/httpError';
 
 export function createApp(): express.Application {
@@ -20,6 +25,8 @@ export function createApp(): express.Application {
   // ─── Body parsers ─────────────────────────────────────────────────────────
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  app.use(cookieParser());
+  app.use(passport.initialize());
 
   // ─── Health check ─────────────────────────────────────────────────────────
   app.get('/health', (_req, res) => {
@@ -27,6 +34,8 @@ export function createApp(): express.Application {
   });
 
   // ─── Routes ───────────────────────────────────────────────────────────────
+  app.use('/auth', authRoutes);
+  app.use('/users', usersRoutes);
   app.use('/jobs', jobsRoutes);
 
   // ─── 404 ──────────────────────────────────────────────────────────────────

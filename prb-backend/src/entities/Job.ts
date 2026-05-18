@@ -4,12 +4,23 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { User } from './User';
 
 @Entity('prb_jobs')
 export class Job {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  /** ID of the user who uploaded this job */
+  @Column({ name: 'user_id', type: 'uuid', nullable: true })
+  userId!: string | null;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'user_id' })
+  user!: User | null;
 
   /** R2 storage key for the user-uploaded image */
   @Column({ type: 'varchar', nullable: false })

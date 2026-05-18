@@ -19,13 +19,14 @@ export interface UpdateJobInput {
 export async function createJob(
   imageBuffer: Buffer,
   mimeType: string,
+  userId: string,
 ): Promise<Job> {
   const ext = mimeType.split('/')[1] ?? 'bin';
   const userImageKey = `prb/user/${uuidv4()}.${ext}`;
 
   await uploadToR2(userImageKey, imageBuffer, mimeType);
 
-  const job = jobRepo().create({ userImageKey });
+  const job = jobRepo().create({ userImageKey, userId });
   return jobRepo().save(job);
 }
 

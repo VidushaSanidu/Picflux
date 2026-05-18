@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { createJob, getAllJobs, getJobById, updateJob } from '../services/jobs.service';
 import { HttpError } from '../utils/httpError';
 
-/** POST /jobs — public; requires image file upload */
+/** POST /jobs — granted or admin only; requires image file upload */
 export async function createJobHandler(req: Request, res: Response): Promise<void> {
   try {
     if (!req.file) {
@@ -10,7 +10,7 @@ export async function createJobHandler(req: Request, res: Response): Promise<voi
       return;
     }
 
-    const job = await createJob(req.file.buffer, req.file.mimetype);
+    const job = await createJob(req.file.buffer, req.file.mimetype, req.user!.id);
     res.status(201).json(job);
   } catch (err) {
     if (err instanceof HttpError) {
