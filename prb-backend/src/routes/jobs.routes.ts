@@ -4,6 +4,7 @@ import { requireImageUpload, optionalProcessedImageUpload } from '../middleware/
 import {
   createJobHandler,
   listJobsHandler,
+  getJobHandler,
   updateJobHandler,
 } from '../controllers/jobs.controller';
 
@@ -14,6 +15,9 @@ router.post('/', requireImageUpload, createJobHandler);
 
 /** GET /jobs — API key required; list all jobs */
 router.get('/', apiKeyAuth, listJobsHandler);
+
+/** GET /jobs/:id — public; get a single job by ID */
+router.get('/:id', getJobHandler);
 
 /** PATCH /jobs/:id — API key required; update job with result data */
 router.patch('/:id', apiKeyAuth, optionalProcessedImageUpload, updateJobHandler);

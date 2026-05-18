@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createJob, getAllJobs, updateJob } from '../services/jobs.service';
+import { createJob, getAllJobs, getJobById, updateJob } from '../services/jobs.service';
 import { HttpError } from '../utils/httpError';
 
 /** POST /jobs — public; requires image file upload */
@@ -33,6 +33,22 @@ export async function listJobsHandler(_req: Request, res: Response): Promise<voi
       return;
     }
     console.error('[listJobsHandler]', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+/** GET /jobs/:id — API key required; returns a single job with presigned URLs */
+export async function getJobHandler(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    const job = await getJobById(id);
+    res.json(job);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      res.status(err.status).json({ message: err.message });
+      return;
+    }
+    console.error('[getJobHandler]', err);
     res.status(500).json({ message: 'Internal server error' });
   }
 }

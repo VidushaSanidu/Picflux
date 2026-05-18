@@ -619,3 +619,189 @@ Common HTTP status codes used across the API:
 | `409` | Conflict — e.g. duplicate email |
 | `429` | Too Many Requests — rate limit exceeded |
 | `500` | Internal server error |
+
+
+# PRB API Reference
+
+**Base URL:** `http://localhost:4001`
+
+This is a separate backend service for perturbation job processing. It shares the same PostgreSQL database and Cloudflare R2 bucket as the main Picflux backend.
+
+---
+
+## Authentication
+
+| Method | Description |
+|--------|-------------|
+| **Public** | No auth required — used for submitting jobs |
+| **API Key** | Pass as `Authorization: Bearer <PRB_API_KEY>` header — used by the admin/processing service to read and update jobs |
+
+---
+
+## `GET /health`
+
+System health check.
+
+**Response `200`**
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-01-01T00:00:00.000Z"
+}
+```
+
+---
+
+## `POST /jobs`
+
+Upload an image and create a new processing job. The job is created immediately with the user image stored in R2. All result fields are `null` until updated via `PATCH /jobs/:id`.
+
+**Auth:** None (public)
+
+**Request Body** `multipart/form-data`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `image` | file | ✓ | Image to process (JPEG, PNG, WebP, or GIF — max 10 MB) |
+
+**Response `201`**
+```json
+{
+  "id": "uuid",
+  "userImageKey": "prb/user/uuid.jpg",
+  "processedImageKey": null,
+  "initialModelScore": null,
+  "initialClass": null,
+  "afterClass": null,
+  "afterScore": null,
+  "createdAt": "2025-01-01T00:00:00.000Z",
+  "updatedAt": "2025-01-01T00:00:00.000Z"
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `400` | No file provided, file too large (> 10 MB), or invalid image format |
+
+---
+
+## `GET /jobs`
+
+Return all jobs in reverse-chronological order. Each job includes short-lived presigned URLs (10 minutes) for stored images.
+
+**Auth:** `Authorization: Bearer <PRB_API_KEY>` required
+
+**Response `200`**
+```json
+[
+  {
+    "id": "uuid",
+    "userImageUrl": "https://r2.example.com/...",
+    "userImageKey": "prb/user/uuid.jpg",
+    "processedImageUrl": "https://r2.example.com/...",
+    "processedImageKey": "prb/processed/uuid.jpg",
+    "initialModelScore": 0.92,
+    "initialClass": "cat",
+    "afterClass": "dog",
+    "afterScore": 0.61,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-02T00:00:00.000Z"
+  }
+]
+```
+
+`processedImageUrl` and `processedImageKey` are `null` until a processed image is uploaded via `PATCH`.
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `401` | Missing or invalid API key |
+
+---
+
+## `GET /jobs/:id`
+
+Return a single job by ID, including short-lived presigned URLs (10 minutes) for stored images.
+
+**Auth:** None (public)
+
+**Path Parameters**
+
+| Parameter | Description |
+|-----------|-------------|
+| `id` | Job UUID |
+
+**Response `200`**
+```json
+{
+  "id": "uuid",
+  "userImageUrl": "https://r2.example.com/...",
+  "userImageKey": "prb/user/uuid.jpg",
+  "processedImageUrl": "https://r2.example.com/...",
+  "processedImageKey": "prb/processed/uuid.jpg",
+  "initialModelScore": 0.92,
+  "initialClass": "cat",
+  "afterClass": "dog",
+  "afterScore": 0.61,
+  "createdAt": "2025-01-01T00:00:00.000Z",
+  "updatedAt": "2025-01-02T00:00:00.000Z"
+}
+```
+
+`processedImageUrl` and `processedImageKey` are `null` until a processed image is uploaded via `PATCH`.
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `404` | Job not found |
+
+---
+
+## `PATCH /jobs/:id`
+
+Update a job with result data from the processing service. All fields are optional — only provided fields are updated.
+
+**Auth:** `Authorization: Bearer <PRB_API_KEY>` required
+
+**Path Parameters**
+
+| Parameter | Description |
+|-----------|-------------|
+| `id` | Job UUID |
+
+**Request Body** `multipart/form-data`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `processedImage` | file | — | Perturbed output image (JPEG, PNG, WebP, or GIF — max 10 MB). Uploaded to R2 and stored as `processedImageKey`. |
+| `initialModelScore` | number | — | Model confidence score for the original image |
+| `initialClass` | string | — | Predicted class for the original image |
+| `afterClass` | string | — | Predicted class after perturbation |
+| `afterScore` | number | — | Model confidence score after perturbation |
+
+**Response `200`**
+```json
+{
+  "id": "uuid",
+  "userImageKey": "prb/user/uuid.jpg",
+  "processedImageKey": "prb/processed/uuid.jpg",
+  "initialModelScore": 0.92,
+  "initialClass": "cat",
+  "afterClass": "dog",
+  "afterScore": 0.61,
+  "createdAt": "2025-01-01T00:00:00.000Z",
+  "updatedAt": "2025-01-02T00:00:00.000Z"
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `400` | Uploaded file is invalid or exceeds 10 MB |
+| `401` | Missing or invalid API key |
+| `404` | Job not found |

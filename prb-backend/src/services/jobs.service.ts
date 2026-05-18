@@ -52,6 +52,31 @@ export async function getAllJobs(): Promise<object[]> {
   );
 }
 
+/** Return a single job by ID with presigned URLs. */
+export async function getJobById(id: string): Promise<object> {
+  const job = await jobRepo().findOneBy({ id });
+
+  if (!job) {
+    throw new HttpError(404, `Job not found: ${id}`);
+  }
+
+  return {
+    id: job.id,
+    userImageUrl: await getPresignedUrl(job.userImageKey),
+    userImageKey: job.userImageKey,
+    processedImageUrl: job.processedImageKey
+      ? await getPresignedUrl(job.processedImageKey)
+      : null,
+    processedImageKey: job.processedImageKey,
+    initialModelScore: job.initialModelScore,
+    initialClass: job.initialClass,
+    afterClass: job.afterClass,
+    afterScore: job.afterScore,
+    createdAt: job.createdAt,
+    updatedAt: job.updatedAt,
+  };
+}
+
 /** Update a job with result data. Optionally uploads a processed image to R2. */
 export async function updateJob(
   id: string,

@@ -7,7 +7,7 @@ export function createApp(): express.Application {
   const app = express();
 
   // ─── CORS ─────────────────────────────────────────────────────────────────
-  const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? '').split(',').map(o => o.trim()).filter(Boolean);
+  const allowedOrigins = (process.env.PRB_ALLOWED_ORIGINS ?? '').split(',').map(o => o.trim()).filter(Boolean);
   app.use(
     cors({
       origin: allowedOrigins.length > 0
