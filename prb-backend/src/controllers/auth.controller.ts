@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import passport from '../config/passport';
-import { register, login } from '../services/auth.service';
+import { register, login, verifyEmail } from '../services/auth.service';
 import { signToken } from '../utils/jwt';
 import { HttpError } from '../utils/httpError';
 import { User } from '../entities/User';
@@ -39,11 +39,19 @@ export async function registerHandler(req: Request, res: Response, next: NextFun
       throw new HttpError(400, 'Password must be at least 8 characters');
     }
 
-    const user = await register(email, password);
-    const token = signToken(user.id, user.role);
-    setAuthCookie(res, token);
+    await register(email, password);
+    res.status(201).json({ message: 'Registration successful. Please check your email to verify your account.' });
+  } catch (err) {
+    next(err);
+  }
+}
 
-    res.status(201).json({ id: user.id, email: user.email, role: user.role });
+export async function verifyEmailHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const token = typeof req.query.token === 'string' ? req.query.token : '';
+    await verifyEmail(token);
+    const frontendOrigin = getFrontendOrigin();
+    res.redirect(`${frontendOrigin}/login?verified=true`);
   } catch (err) {
     next(err);
   }

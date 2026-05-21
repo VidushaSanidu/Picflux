@@ -23,6 +23,15 @@ export class User {
   @Column({ type: 'enum', enum: PrbUserRole, default: PrbUserRole.GENERAL })
   role!: PrbUserRole;
 
+  @Column({ name: 'is_verified', type: 'boolean', default: false })
+  isVerified!: boolean;
+
+  @Column({ name: 'verification_token', type: 'varchar', nullable: true })
+  verificationToken!: string | null;
+
+  @Column({ name: 'verification_token_expires_at', type: 'timestamp', nullable: true })
+  verificationTokenExpiresAt!: Date | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 }

@@ -1,7 +1,11 @@
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import { AppDataSource } from '../config/database';
 import { User, PrbUserRole } from '../entities/User';
 import { HttpError } from '../utils/httpError';
+import { sendVerificationEmail } from './email.service';
+
+const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 const BCRYPT_ROUNDS = 12;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -27,11 +31,14 @@ export async function findOrCreateGoogleUser(googleId: string, email: string): P
     passwordHash: null,
     googleId,
     role: PrbUserRole.GENERAL,
+    isVerified: true,
+    verificationToken: null,
+    verificationTokenExpiresAt: null,
   });
   return userRepo.save(user);
 }
 
-export async function register(email: string, password: string): Promise<User> {
+export async function register(email: string, password: string): Promise<void> {
   const normalizedEmail = email.toLowerCase().trim();
 
   if (!EMAIL_REGEX.test(normalizedEmail)) {
@@ -51,13 +58,20 @@ export async function register(email: string, password: string): Promise<User> {
 
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  const verificationTokenExpiresAt = new Date(Date.now() + VERIFICATION_TOKEN_TTL_MS);
+
   const user = userRepo.create({
     email: normalizedEmail,
     passwordHash,
     role: PrbUserRole.GENERAL,
+    isVerified: false,
+    verificationToken,
+    verificationTokenExpiresAt,
   });
 
-  return userRepo.save(user);
+  await userRepo.save(user);
+  await sendVerificationEmail(normalizedEmail, verificationToken);
 }
 
 export async function login(email: string, password: string): Promise<User> {
@@ -75,5 +89,31 @@ export async function login(email: string, password: string): Promise<User> {
     throw new HttpError(401, 'Invalid email or password');
   }
 
+  if (!user.isVerified) {
+    throw new HttpError(403, 'Email not verified. Please check your inbox.');
+  }
+
   return user;
+}
+
+export async function verifyEmail(token: string): Promise<void> {
+  if (!token) {
+    throw new HttpError(400, 'Verification token is required');
+  }
+
+  const userRepo = AppDataSource.getRepository(User);
+  const user = await userRepo.findOne({ where: { verificationToken: token } });
+
+  if (!user || !user.verificationTokenExpiresAt) {
+    throw new HttpError(400, 'Invalid or expired verification link');
+  }
+
+  if (user.verificationTokenExpiresAt < new Date()) {
+    throw new HttpError(400, 'Verification link has expired. Please register again.');
+  }
+
+  user.isVerified = true;
+  user.verificationToken = null;
+  user.verificationTokenExpiresAt = null;
+  await userRepo.save(user);
 }
