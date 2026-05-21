@@ -9,6 +9,13 @@ import {
 } from 'typeorm';
 import { User } from './User';
 
+export enum JobStatus {
+  WAITING = 'WAITING',
+  CLASSIFIED = 'CLASSIFIED',
+  PENDING = 'PENDING',
+  COMPLETE = 'COMPLETE',
+}
+
 @Entity('prb_jobs')
 export class Job {
   @PrimaryGeneratedColumn('uuid')
@@ -25,6 +32,14 @@ export class Job {
   /** R2 storage key for the user-uploaded image */
   @Column({ type: 'varchar', nullable: false })
   userImageKey!: string;
+
+  /** Job processing status */
+  @Column({ type: 'enum', enum: JobStatus, default: JobStatus.WAITING })
+  status!: JobStatus;
+
+  /** R2 storage keys for example images — set via PATCH */
+  @Column({ type: 'text', array: true, default: [] })
+  exampleImageKeys!: string[];
 
   /** R2 storage key for the processed (perturbed) image — set via PATCH */
   @Column({ type: 'varchar', nullable: true, default: null })

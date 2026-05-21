@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { AppDataSource } from '../config/database';
-import { Job } from '../entities/Job';
+import { Job, JobStatus } from '../entities/Job';
 import { uploadToR2, getPresignedUrl } from './r2.service';
 import { HttpError } from '../utils/httpError';
 
@@ -13,6 +13,9 @@ export interface UpdateJobInput {
   initialClass?: string;
   afterClass?: string;
   afterScore?: number;
+  status?: JobStatus;
+  exampleImageBuffers?: Buffer[];
+  exampleImageMimeTypes?: string[];
 }
 
 /** Upload user image to R2 and create a new Job record. */
@@ -37,12 +40,15 @@ export async function getAllJobs(): Promise<object[]> {
   return Promise.all(
     jobs.map(async (job) => ({
       id: job.id,
+      status: job.status,
       userImageUrl: await getPresignedUrl(job.userImageKey),
       userImageKey: job.userImageKey,
       processedImageUrl: job.processedImageKey
         ? await getPresignedUrl(job.processedImageKey)
         : null,
       processedImageKey: job.processedImageKey,
+      exampleImageUrls: await Promise.all(job.exampleImageKeys.map((k) => getPresignedUrl(k))),
+      exampleImageKeys: job.exampleImageKeys,
       initialModelScore: job.initialModelScore,
       initialClass: job.initialClass,
       afterClass: job.afterClass,
@@ -63,12 +69,15 @@ export async function getJobById(id: string): Promise<object> {
 
   return {
     id: job.id,
+    status: job.status,
     userImageUrl: await getPresignedUrl(job.userImageKey),
     userImageKey: job.userImageKey,
     processedImageUrl: job.processedImageKey
       ? await getPresignedUrl(job.processedImageKey)
       : null,
     processedImageKey: job.processedImageKey,
+    exampleImageUrls: await Promise.all(job.exampleImageKeys.map((k) => getPresignedUrl(k))),
+    exampleImageKeys: job.exampleImageKeys,
     initialModelScore: job.initialModelScore,
     initialClass: job.initialClass,
     afterClass: job.afterClass,
@@ -100,6 +109,20 @@ export async function updateJob(
   if (input.initialClass !== undefined) job.initialClass = input.initialClass;
   if (input.afterClass !== undefined) job.afterClass = input.afterClass;
   if (input.afterScore !== undefined) job.afterScore = input.afterScore;
+  if (input.status !== undefined) job.status = input.status;
+
+  if (input.exampleImageBuffers && input.exampleImageBuffers.length > 0) {
+    const newKeys: string[] = [];
+    for (let i = 0; i < input.exampleImageBuffers.length; i++) {
+      const buf = input.exampleImageBuffers[i];
+      const mime = input.exampleImageMimeTypes?.[i] ?? 'application/octet-stream';
+      const ext = mime.split('/')[1] ?? 'bin';
+      const key = `prb/examples/${uuidv4()}.${ext}`;
+      await uploadToR2(key, buf, mime);
+      newKeys.push(key);
+    }
+    job.exampleImageKeys = newKeys;
+  }
 
   return jobRepo().save(job);
 }

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { createJob, getAllJobs, getJobById, updateJob } from '../services/jobs.service';
+import { JobStatus } from '../entities/Job';
 import { HttpError } from '../utils/httpError';
 
 /** POST /jobs — granted or admin only; requires image file upload */
@@ -57,15 +58,22 @@ export async function getJobHandler(req: Request, res: Response): Promise<void> 
 export async function updateJobHandler(req: Request, res: Response): Promise<void> {
   try {
     const { id } = req.params;
-    const { initialModelScore, initialClass, afterClass, afterScore } = req.body;
+    const { initialModelScore, initialClass, afterClass, afterScore, status } = req.body;
+
+    const files = req.files as Record<string, Express.Multer.File[]> | undefined;
+    const processedImageFile = files?.['processedImage']?.[0];
+    const exampleImageFiles = files?.['exampleImages'] ?? [];
 
     const input = {
-      processedImageBuffer: req.file?.buffer,
-      processedImageMimeType: req.file?.mimetype,
+      processedImageBuffer: processedImageFile?.buffer,
+      processedImageMimeType: processedImageFile?.mimetype,
       initialModelScore: initialModelScore !== undefined ? parseFloat(initialModelScore) : undefined,
       initialClass: initialClass as string | undefined,
       afterClass: afterClass as string | undefined,
       afterScore: afterScore !== undefined ? parseFloat(afterScore) : undefined,
+      status: status as JobStatus | undefined,
+      exampleImageBuffers: exampleImageFiles.length > 0 ? exampleImageFiles.map((f) => f.buffer) : undefined,
+      exampleImageMimeTypes: exampleImageFiles.length > 0 ? exampleImageFiles.map((f) => f.mimetype) : undefined,
     };
 
     const job = await updateJob(id, input);

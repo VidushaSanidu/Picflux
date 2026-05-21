@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { jwtAuth } from '../middleware/jwtAuth';
 import { requireRole } from '../middleware/requireRole';
 import { apiKeyOrAdmin } from '../middleware/apiKeyOrAdmin';
-import { requireImageUpload, optionalProcessedImageUpload } from '../middleware/uploadMiddleware';
+import { requireImageUpload, optionalJobUpdateUpload } from '../middleware/uploadMiddleware';
 import { PrbUserRole } from '../entities/User';
 import {
   createJobHandler,
@@ -23,6 +23,6 @@ router.get('/', apiKeyOrAdmin, listJobsHandler);
 router.get('/:id', apiKeyOrAdmin, getJobHandler);
 
 /** PATCH /jobs/:id — API key or admin JWT required; update job with result data */
-router.patch('/:id', apiKeyOrAdmin, optionalProcessedImageUpload, updateJobHandler);
+router.patch('/:id', apiKeyOrAdmin, optionalJobUpdateUpload, updateJobHandler);
 
 export default router;
