@@ -113,7 +113,7 @@ export function googleCallbackHandler(req: Request, res: Response, next: NextFun
       }
       const token = signToken(user.id, user.role);
       setAuthCookie(res, token);
-      res.redirect(`${frontendOrigin}/dashboard`);
+      res.redirect(`https://api.perturbai.io`);
     },
   )(req, res, next);
 }
