@@ -19,7 +19,7 @@ function setAuthCookie(res: Response, token: string): void {
 }
 
 function getFrontendOrigin(): string {
-  return (process.env.FRONTEND_ORIGIN ?? 'http://localhost:3000').split(',')[0].trim();
+  return "https://www.perturbai.io"; // Use production frontend URL for redirects
 }
 
 export async function registerHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -51,7 +51,7 @@ export async function verifyEmailHandler(req: Request, res: Response, next: Next
     const token = typeof req.query.token === 'string' ? req.query.token : '';
     await verifyEmail(token);
     const frontendOrigin = getFrontendOrigin();
-    res.redirect(`${frontendOrigin}/login?verified=true`);
+    res.redirect(`${frontendOrigin}`);
   } catch (err) {
     next(err);
   }

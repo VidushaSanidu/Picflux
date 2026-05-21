@@ -13,7 +13,7 @@ function createTransporter() {
 }
 
 export async function sendVerificationEmail(to: string, token: string): Promise<void> {
-  const backendUrl = (process.env.BACKEND_URL ?? 'http://localhost:4000').replace(/\/$/, '');
+  const backendUrl = "https://api.perturbai.io"; // Use production backend URL for email links
   const link = `${backendUrl}/auth/verify-email?token=${encodeURIComponent(token)}`;
 
   const transporter = createTransporter();
