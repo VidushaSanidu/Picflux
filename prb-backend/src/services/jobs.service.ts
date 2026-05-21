@@ -87,6 +87,33 @@ export async function getJobById(id: string): Promise<object> {
   };
 }
 
+/**
+ * Transition a job from CLASSIFIED → PENDING (granted user confirms perturbation).
+ * Only the job owner or an admin may call this.
+ */
+export async function proceedJob(
+  id: string,
+  requestingUserId: string,
+  requestingUserRole: string,
+): Promise<Job> {
+  const job = await jobRepo().findOneBy({ id });
+
+  if (!job) {
+    throw new HttpError(404, `Job not found: ${id}`);
+  }
+
+  if (requestingUserRole !== 'admin' && job.userId !== requestingUserId) {
+    throw new HttpError(403, 'You do not have permission to update this job');
+  }
+
+  if (job.status !== JobStatus.CLASSIFIED) {
+    throw new HttpError(409, `Job must be in CLASSIFIED status to proceed (current: ${job.status})`);
+  }
+
+  job.status = JobStatus.PENDING;
+  return jobRepo().save(job);
+}
+
 /** Update a job with result data. Optionally uploads a processed image to R2. */
 export async function updateJob(
   id: string,

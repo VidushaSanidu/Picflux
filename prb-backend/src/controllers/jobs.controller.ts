@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createJob, getAllJobs, getJobById, updateJob } from '../services/jobs.service';
+import { createJob, getAllJobs, getJobById, updateJob, proceedJob } from '../services/jobs.service';
 import { JobStatus } from '../entities/Job';
 import { HttpError } from '../utils/httpError';
 
@@ -50,6 +50,22 @@ export async function getJobHandler(req: Request, res: Response): Promise<void> 
       return;
     }
     console.error('[getJobHandler]', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+/** POST /jobs/:id/proceed — granted/admin only; transitions job from CLASSIFIED → PENDING */
+export async function proceedJobHandler(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    const job = await proceedJob(id, req.user!.id, req.user!.role);
+    res.json(job);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      res.status(err.status).json({ message: err.message });
+      return;
+    }
+    console.error('[proceedJobHandler]', err);
     res.status(500).json({ message: 'Internal server error' });
   }
 }

@@ -32,26 +32,30 @@ passport.use(
   ),
 );
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL!,
-    },
-    async (_accessToken, _refreshToken, profile, done) => {
-      try {
-        const email = profile.emails?.[0]?.value;
-        if (!email) {
-          return done(new Error('No email returned from Google'));
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.env.GOOGLE_CALLBACK_URL) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL,
+      },
+      async (_accessToken, _refreshToken, profile, done) => {
+        try {
+          const email = profile.emails?.[0]?.value;
+          if (!email) {
+            return done(new Error('No email returned from Google'));
+          }
+          const user = await findOrCreateGoogleUser(profile.id, email);
+          return done(null, user);
+        } catch (err) {
+          return done(err as Error);
         }
-        const user = await findOrCreateGoogleUser(profile.id, email);
-        return done(null, user);
-      } catch (err) {
-        return done(err as Error);
-      }
-    },
-  ),
-);
+      },
+    ),
+  );
+} else {
+  console.warn('Google OAuth is not configured: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, or GOOGLE_CALLBACK_URL is missing.');
+}
 
 export default passport;
