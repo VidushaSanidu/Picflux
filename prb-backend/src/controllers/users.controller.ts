@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { PrbUserRole } from '../entities/User';
-import { listUsers, updateUserRole } from '../services/users.service';
+import { listUsers, updateUserRole, updateUserProfile, UpdateProfileInput } from '../services/users.service';
 import { HttpError } from '../utils/httpError';
 
 export async function listUsersHandler(_req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -22,6 +22,21 @@ export async function updateRoleHandler(req: Request, res: Response, next: NextF
     }
 
     const updated = await updateUserRole(id, role as PrbUserRole);
+    res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function updateProfileHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { name, username, password } = req.body as UpdateProfileInput;
+
+    if (name === undefined && username === undefined && password === undefined) {
+      throw new HttpError(400, 'Provide at least one field to update: name, username, or password');
+    }
+
+    const updated = await updateUserProfile(req.user!.id, { name, username, password });
     res.json(updated);
   } catch (err) {
     next(err);

@@ -46,7 +46,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && process.
           if (!email) {
             return done(new Error('No email returned from Google'));
           }
-          const user = await findOrCreateGoogleUser(profile.id, email);
+          const user = await findOrCreateGoogleUser(profile.id, email, profile.displayName);
           return done(null, user);
         } catch (err) {
           return done(err as Error);

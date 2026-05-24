@@ -10,15 +10,16 @@ const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const BCRYPT_ROUNDS = 12;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export async function findOrCreateGoogleUser(googleId: string, email: string): Promise<User> {
+export async function findOrCreateGoogleUser(googleId: string, email: string, displayName?: string): Promise<User> {
   const userRepo = AppDataSource.getRepository(User);
+  const normalizedEmail = email.toLowerCase().trim();
 
   // 1. Already linked to this Google account
   const byGoogleId = await userRepo.findOne({ where: { googleId } });
   if (byGoogleId) return byGoogleId;
 
   // 2. Existing local account with same email — auto-link
-  const byEmail = await userRepo.findOne({ where: { email: email.toLowerCase().trim() } });
+  const byEmail = await userRepo.findOne({ where: { email: normalizedEmail } });
   if (byEmail) {
     byEmail.googleId = googleId;
     await userRepo.save(byEmail);
@@ -27,9 +28,11 @@ export async function findOrCreateGoogleUser(googleId: string, email: string): P
 
   // 3. Brand new user
   const user = userRepo.create({
-    email: email.toLowerCase().trim(),
+    email: normalizedEmail,
     passwordHash: null,
     googleId,
+    username: normalizedEmail.split('@')[0],
+    name: displayName ?? null,
     role: PrbUserRole.GENERAL,
     isVerified: true,
     verificationToken: null,
@@ -38,7 +41,7 @@ export async function findOrCreateGoogleUser(googleId: string, email: string): P
   return userRepo.save(user);
 }
 
-export async function register(email: string, password: string): Promise<void> {
+export async function register(email: string, password: string, name?: string): Promise<void> {
   const normalizedEmail = email.toLowerCase().trim();
 
   if (!EMAIL_REGEX.test(normalizedEmail)) {
@@ -64,6 +67,8 @@ export async function register(email: string, password: string): Promise<void> {
   const user = userRepo.create({
     email: normalizedEmail,
     passwordHash,
+    username: normalizedEmail.split('@')[0],
+    name: name?.trim() || null,
     role: PrbUserRole.GENERAL,
     isVerified: false,
     verificationToken,

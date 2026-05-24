@@ -4,6 +4,7 @@ import { register, login, verifyEmail } from '../services/auth.service';
 import { signToken } from '../utils/jwt';
 import { HttpError } from '../utils/httpError';
 import { User } from '../entities/User';
+import { AppDataSource } from '../config/database';
 
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
 
@@ -24,7 +25,7 @@ function getFrontendOrigin(): string {
 
 export async function registerHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { email, password } = req.body as { email?: unknown; password?: unknown };
+    const { email, password, name } = req.body as { email?: unknown; password?: unknown; name?: unknown };
 
     if (typeof email !== 'string' || typeof password !== 'string') {
       throw new HttpError(400, 'email and password are required');
@@ -39,7 +40,7 @@ export async function registerHandler(req: Request, res: Response, next: NextFun
       throw new HttpError(400, 'Password must be at least 8 characters');
     }
 
-    await register(email, password);
+    await register(email, password, typeof name === 'string' ? name : undefined);
     res.status(201).json({ message: 'Registration successful. Please check your email to verify your account.' });
   } catch (err) {
     next(err);
@@ -78,7 +79,7 @@ export async function loginHandler(req: Request, res: Response, next: NextFuncti
     const token = signToken(user.id, user.role);
     setAuthCookie(res, token);
 
-    res.json({ id: user.id, email: user.email, role: user.role });
+    res.json({ id: user.id, email: user.email, username: user.username, name: user.name, role: user.role });
   } catch (err) {
     next(err);
   }
@@ -89,8 +90,17 @@ export function logoutHandler(_req: Request, res: Response): void {
   res.json({ message: 'Logged out' });
 }
 
-export function meHandler(req: Request, res: Response): void {
-  res.json(req.user);
+export async function meHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const user = await AppDataSource.getRepository(User).findOneBy({ id: req.user!.id });
+    if (!user) {
+      res.status(401).json({ message: 'User not found' });
+      return;
+    }
+    res.json({ id: user.id, email: user.email, username: user.username, name: user.name, role: user.role });
+  } catch (err) {
+    next(err);
+  }
 }
 
 // ─── Google OAuth ─────────────────────────────────────────────────────────────

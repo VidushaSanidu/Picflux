@@ -20,6 +20,12 @@ export class User {
   @Column({ name: 'google_id', nullable: true, unique: true, type: 'varchar', length: 255 })
   googleId!: string | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  username!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  name!: string | null;
+
   @Column({ type: 'enum', enum: PrbUserRole, default: PrbUserRole.GENERAL })
   role!: PrbUserRole;
 
