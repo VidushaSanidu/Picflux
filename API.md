@@ -1052,3 +1052,45 @@ Update a user's role.
 | `401` | Missing or invalid JWT cookie |
 | `403` | Authenticated but not an admin |
 | `404` | User not found |
+
+
+---
+
+### `GET /jobs/my`
+
+Return the last 10 jobs submitted by the authenticated user, in reverse-chronological order. Each job includes short-lived presigned URLs (10 minutes) for stored images.
+
+**Auth:** JWT cookie required — user must have `granted` or `admin` role.
+
+**Response `200`**
+```json
+[
+  {
+    "id": "uuid",
+    "status": "COMPLETE",
+    "userImageUrl": "https://r2.example.com/...",
+    "userImageKey": "prb/user/uuid.jpg",
+    "processedImageUrl": "https://r2.example.com/...",
+    "processedImageKey": "prb/processed/uuid.jpg",
+    "exampleImageUrls": ["https://r2.example.com/..."],
+    "exampleImageKeys": ["prb/examples/uuid.jpg"],
+    "perturbedExampleImageUrls": ["https://r2.example.com/..."],
+    "perturbedExampleImageKeys": ["prb/perturbed/uuid.jpg"],
+    "initialModelScore": 0.92,
+    "initialClass": "cat",
+    "afterClass": "dog",
+    "afterScore": 0.61,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-02T00:00:00.000Z"
+  }
+]
+```
+
+Returns at most 10 items. `processedImageUrl`/`processedImageKey` are `null` until set via `PATCH`. Array fields are empty until populated via `PATCH`.
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `401` | Missing or invalid JWT cookie |
+| `403` | Authenticated but role is not `granted` or `admin` |

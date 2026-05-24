@@ -8,6 +8,7 @@ import {
   createJobHandler,
   listJobsHandler,
   getJobHandler,
+  getMyJobsHandler,
   updateJobHandler,
   proceedJobHandler,
 } from '../controllers/jobs.controller';
@@ -19,6 +20,9 @@ router.post('/', jwtAuth, requireRole(PrbUserRole.GRANTED, PrbUserRole.ADMIN), r
 
 /** POST /jobs/:id/proceed — granted or admin only; transition job CLASSIFIED → PENDING */
 router.post('/:id/proceed', jwtAuth, requireRole(PrbUserRole.GRANTED, PrbUserRole.ADMIN), proceedJobHandler);
+
+/** GET /jobs/my — granted or admin only; returns the last 10 jobs for the authenticated user */
+router.get('/my', jwtAuth, requireRole(PrbUserRole.GRANTED, PrbUserRole.ADMIN), getMyJobsHandler);
 
 /** GET /jobs — API key or admin JWT required; list all jobs */
 router.get('/', apiKeyOrAdmin, listJobsHandler);

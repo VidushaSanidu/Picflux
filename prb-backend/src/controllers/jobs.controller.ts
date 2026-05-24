@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createJob, getAllJobs, getJobById, updateJob, proceedJob } from '../services/jobs.service';
+import { createJob, getAllJobs, getJobById, getMyJobs, updateJob, proceedJob } from '../services/jobs.service';
 import { JobStatus } from '../entities/Job';
 import { HttpError } from '../utils/httpError';
 
@@ -19,6 +19,21 @@ export async function createJobHandler(req: Request, res: Response): Promise<voi
       return;
     }
     console.error('[createJobHandler]', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+/** GET /jobs/my — granted or admin only; returns the last 10 jobs for the authenticated user */
+export async function getMyJobsHandler(req: Request, res: Response): Promise<void> {
+  try {
+    const jobs = await getMyJobs(req.user!.id);
+    res.json(jobs);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      res.status(err.status).json({ message: err.message });
+      return;
+    }
+    console.error('[getMyJobsHandler]', err);
     res.status(500).json({ message: 'Internal server error' });
   }
 }

@@ -52,8 +52,8 @@ Content-Type: multipart/form-data
 ```bash
 curl -X PATCH https://api.perturbai.io/jobs/<JOB_ID> \
   -H "Authorization: Bearer <PRB_API_KEY>" \
-  -F "exampleImages=@/path/to/example1.jpg" \
-  -F "exampleImages=@/path/to/example2.jpg" \
+  -F "exampleImages={file}" \
+  -F "exampleImages={file}" \
   -F "initialModelScore=0.92" \
   -F "initialClass=cat" \
   -F "status=CLASSIFIED"
@@ -81,7 +81,7 @@ with open("example1.jpg", "rb") as ex1, \
     )
 ```
 
-> **Important:** Repeat the `exampleImages` field once per file — do **not** send them as a JSON array. Up to 20 files are accepted per call.
+> **Important:** Repeat the `exampleImages` field once per file — do **not** send them as a JSON array. Up to 5 files are accepted per call.
 
 **Response `200`** — raw job entity (storage keys, no presigned URLs):
 ```json

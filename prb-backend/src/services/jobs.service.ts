@@ -93,6 +93,38 @@ export async function getJobById(id: string): Promise<object> {
   };
 }
 
+/** Return the last 10 jobs belonging to a specific user, with presigned URLs. */
+export async function getMyJobs(userId: string): Promise<object[]> {
+  const jobs = await jobRepo().find({
+    where: { userId },
+    order: { createdAt: 'DESC' },
+    take: 10,
+  });
+
+  return Promise.all(
+    jobs.map(async (job) => ({
+      id: job.id,
+      status: job.status,
+      userImageUrl: await getPresignedUrl(job.userImageKey),
+      userImageKey: job.userImageKey,
+      processedImageUrl: job.processedImageKey
+        ? await getPresignedUrl(job.processedImageKey)
+        : null,
+      processedImageKey: job.processedImageKey,
+      exampleImageUrls: await Promise.all(job.exampleImageKeys.map((k) => getPresignedUrl(k))),
+      exampleImageKeys: job.exampleImageKeys,
+      perturbedExampleImageUrls: await Promise.all(job.perturbedExampleImageKeys.map((k) => getPresignedUrl(k))),
+      perturbedExampleImageKeys: job.perturbedExampleImageKeys,
+      initialModelScore: job.initialModelScore,
+      initialClass: job.initialClass,
+      afterClass: job.afterClass,
+      afterScore: job.afterScore,
+      createdAt: job.createdAt,
+      updatedAt: job.updatedAt,
+    })),
+  );
+}
+
 /**
  * Transition a job from CLASSIFIED → PENDING (granted user confirms perturbation).
  * Only the job owner or an admin may call this.
