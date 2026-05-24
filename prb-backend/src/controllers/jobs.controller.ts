@@ -79,6 +79,7 @@ export async function updateJobHandler(req: Request, res: Response): Promise<voi
     const files = req.files as Record<string, Express.Multer.File[]> | undefined;
     const processedImageFile = files?.['processedImage']?.[0];
     const exampleImageFiles = files?.['exampleImages'] ?? [];
+    const perturbedExampleImageFiles = files?.['perturbedExampleImages'] ?? [];
 
     const input = {
       processedImageBuffer: processedImageFile?.buffer,
@@ -90,6 +91,8 @@ export async function updateJobHandler(req: Request, res: Response): Promise<voi
       status: status as JobStatus | undefined,
       exampleImageBuffers: exampleImageFiles.length > 0 ? exampleImageFiles.map((f) => f.buffer) : undefined,
       exampleImageMimeTypes: exampleImageFiles.length > 0 ? exampleImageFiles.map((f) => f.mimetype) : undefined,
+      perturbedExampleImageBuffers: perturbedExampleImageFiles.length > 0 ? perturbedExampleImageFiles.map((f) => f.buffer) : undefined,
+      perturbedExampleImageMimeTypes: perturbedExampleImageFiles.length > 0 ? perturbedExampleImageFiles.map((f) => f.mimetype) : undefined,
     };
 
     const job = await updateJob(id, input);

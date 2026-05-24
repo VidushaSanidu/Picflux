@@ -16,6 +16,8 @@ export interface UpdateJobInput {
   status?: JobStatus;
   exampleImageBuffers?: Buffer[];
   exampleImageMimeTypes?: string[];
+  perturbedExampleImageBuffers?: Buffer[];
+  perturbedExampleImageMimeTypes?: string[];
 }
 
 /** Upload user image to R2 and create a new Job record. */
@@ -49,6 +51,8 @@ export async function getAllJobs(): Promise<object[]> {
       processedImageKey: job.processedImageKey,
       exampleImageUrls: await Promise.all(job.exampleImageKeys.map((k) => getPresignedUrl(k))),
       exampleImageKeys: job.exampleImageKeys,
+      perturbedExampleImageUrls: await Promise.all(job.perturbedExampleImageKeys.map((k) => getPresignedUrl(k))),
+      perturbedExampleImageKeys: job.perturbedExampleImageKeys,
       initialModelScore: job.initialModelScore,
       initialClass: job.initialClass,
       afterClass: job.afterClass,
@@ -78,6 +82,8 @@ export async function getJobById(id: string): Promise<object> {
     processedImageKey: job.processedImageKey,
     exampleImageUrls: await Promise.all(job.exampleImageKeys.map((k) => getPresignedUrl(k))),
     exampleImageKeys: job.exampleImageKeys,
+    perturbedExampleImageUrls: await Promise.all(job.perturbedExampleImageKeys.map((k) => getPresignedUrl(k))),
+    perturbedExampleImageKeys: job.perturbedExampleImageKeys,
     initialModelScore: job.initialModelScore,
     initialClass: job.initialClass,
     afterClass: job.afterClass,
@@ -149,6 +155,19 @@ export async function updateJob(
       newKeys.push(key);
     }
     job.exampleImageKeys = newKeys;
+  }
+
+  if (input.perturbedExampleImageBuffers && input.perturbedExampleImageBuffers.length > 0) {
+    const newKeys: string[] = [];
+    for (let i = 0; i < input.perturbedExampleImageBuffers.length; i++) {
+      const buf = input.perturbedExampleImageBuffers[i];
+      const mime = input.perturbedExampleImageMimeTypes?.[i] ?? 'application/octet-stream';
+      const ext = mime.split('/')[1] ?? 'bin';
+      const key = `prb/perturbed-examples/${uuidv4()}.${ext}`;
+      await uploadToR2(key, buf, mime);
+      newKeys.push(key);
+    }
+    job.perturbedExampleImageKeys = newKeys;
   }
 
   return jobRepo().save(job);

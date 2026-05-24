@@ -45,6 +45,10 @@ export class Job {
   @Column({ type: 'varchar', nullable: true, default: null })
   processedImageKey!: string | null;
 
+  /** R2 storage keys for perturbed example images — set via PATCH (Call 2) */
+  @Column({ type: 'text', array: true, default: [] })
+  perturbedExampleImageKeys!: string[];
+
   /** Model confidence score for the original image — set via PATCH */
   @Column({ type: 'double precision', nullable: true, default: null })
   initialModelScore!: number | null;

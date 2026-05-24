@@ -125,6 +125,7 @@ export async function optionalJobUpdateUpload(
   multerInstance.fields([
     { name: 'processedImage', maxCount: 1 },
     { name: 'exampleImages', maxCount: 20 },
+    { name: 'perturbedExampleImages', maxCount: 20 },
   ])(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       if (err.code === 'LIMIT_FILE_SIZE') {
@@ -159,6 +160,18 @@ export async function optionalJobUpdateUpload(
       if (!detectedMime) {
         res.status(400).json({
           message: 'One or more exampleImages do not match an allowed image format (JPEG, PNG, WebP, GIF)',
+        });
+        return;
+      }
+      file.mimetype = detectedMime;
+    }
+
+    const perturbedExampleImages = files?.['perturbedExampleImages'] ?? [];
+    for (const file of perturbedExampleImages) {
+      const detectedMime = await validateMagicBytes(file);
+      if (!detectedMime) {
+        res.status(400).json({
+          message: 'One or more perturbedExampleImages do not match an allowed image format (JPEG, PNG, WebP, GIF)',
         });
         return;
       }

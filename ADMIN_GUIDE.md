@@ -121,6 +121,7 @@ Content-Type: multipart/form-data
 | Field | Type | Description |
 |-------|------|-------------|
 | `processedImage` | file | The perturbed output image (max 10 MB) |
+| `perturbedExampleImages` | file[] | One or more example/explanation images for the perturbed result (max 10 MB each, max 20 files). **Replaces** any existing perturbed example images. |
 | `afterClass` | string | Predicted class after perturbation |
 | `afterScore` | number | Confidence score after perturbation |
 | `status` | string | `COMPLETE` |
@@ -130,6 +131,8 @@ Content-Type: multipart/form-data
 curl -X PATCH https://api.perturbai.io/jobs/<JOB_ID> \
   -H "Authorization: Bearer <PRB_API_KEY>" \
   -F "processedImage=@/path/to/perturbed.jpg" \
+  -F "perturbedExampleImages=@/path/to/perturbed_example1.jpg" \
+  -F "perturbedExampleImages=@/path/to/perturbed_example2.jpg" \
   -F "afterClass=dog" \
   -F "afterScore=0.61" \
   -F "status=COMPLETE"
@@ -139,13 +142,17 @@ curl -X PATCH https://api.perturbai.io/jobs/<JOB_ID> \
 ```python
 import requests
 
-with open("perturbed.jpg", "rb") as processed:
+with open("perturbed.jpg", "rb") as processed, \
+     open("perturbed_example1.jpg", "rb") as pex1, \
+     open("perturbed_example2.jpg", "rb") as pex2:
 
     requests.patch(
         f"https://api.perturbai.io/jobs/{job_id}",
         headers={"Authorization": f"Bearer {PRB_API_KEY}"},
         files=[
             ("processedImage", ("perturbed.jpg", processed, "image/jpeg")),
+            ("perturbedExampleImages", ("perturbed_example1.jpg", pex1, "image/jpeg")),
+            ("perturbedExampleImages", ("perturbed_example2.jpg", pex2, "image/jpeg")),
         ],
         data={
             "afterClass": "dog",
@@ -167,6 +174,10 @@ with open("perturbed.jpg", "rb") as processed:
     "prb/examples/uuid2.jpg"
   ],
   "processedImageKey": "prb/processed/uuid.jpg",
+  "perturbedExampleImageKeys": [
+    "prb/perturbed-examples/uuid3.jpg",
+    "prb/perturbed-examples/uuid4.jpg"
+  ],
   "initialModelScore": 0.92,
   "initialClass": "cat",
   "afterClass": "dog",
