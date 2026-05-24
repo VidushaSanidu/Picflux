@@ -31,6 +31,7 @@ export interface UpdateProfileInput {
   name?: string;
   username?: string;
   password?: string;
+  currentPassword?: string;
 }
 
 export async function updateUserProfile(
@@ -57,6 +58,20 @@ export async function updateUserProfile(
   }
 
   if (input.password !== undefined) {
+    if (!input.currentPassword) {
+      throw new HttpError(400, 'currentPassword is required to change your password');
+    }
+
+    // Google-only accounts have no password hash
+    if (!user.passwordHash) {
+      throw new HttpError(400, 'Cannot set a password on an account that uses Google sign-in only');
+    }
+
+    const match = await bcrypt.compare(input.currentPassword, user.passwordHash);
+    if (!match) {
+      throw new HttpError(401, 'Current password is incorrect');
+    }
+
     if (input.password.length < 8) {
       throw new HttpError(400, 'Password must be at least 8 characters');
     }

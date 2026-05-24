@@ -674,15 +674,14 @@ Create a new account. Sets the `token` JWT cookie on success.
 |-------|------|----------|-------------|
 | `email` | string | ✓ | User email address |
 | `password` | string | ✓ | Plain-text password (min 8 characters) |
+| `name` | string | — | Display name (optional) |
 
 **Response `201`**
 ```json
-{
-  "id": "uuid",
-  "email": "user@example.com",
-  "role": "general"
-}
+{ "message": "Registration successful. Please check your email to verify your account." }
 ```
+
+`username` is automatically set to the part of the email before `@`.
 
 **Errors**
 
@@ -709,6 +708,8 @@ Authenticate and receive a JWT cookie.
 {
   "id": "uuid",
   "email": "user@example.com",
+  "username": "johndoe",
+  "name": "John Doe",
   "role": "general"
 }
 ```
@@ -744,6 +745,8 @@ Returns the currently authenticated user's profile.
 {
   "id": "uuid",
   "email": "user@example.com",
+  "username": "johndoe",
+  "name": "John Doe",
   "role": "general"
 }
 ```
@@ -988,7 +991,42 @@ Update a job with result data from the processing service. All fields are option
 
 ## User Management
 
-All user management routes require a valid JWT cookie **and** the `admin` role.
+### `PATCH /users/me`
+
+Update the authenticated user's own profile. At least one field must be provided. Email cannot be changed.
+
+**Auth:** JWT cookie required (any role).
+
+**Request Body** `application/json`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | — | New display name (send empty string to clear) |
+| `username` | string | — | New username (cannot be empty) |
+| `currentPassword` | string | — | Current password — **required when changing password** |
+| `password` | string | — | New password (min 8 characters) |
+
+**Response `200`**
+```json
+{
+  "id": "uuid",
+  "email": "user@example.com",
+  "username": "johndoe",
+  "name": "John Doe",
+  "role": "general"
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `400` | No fields provided, `username` is empty, `currentPassword` missing when changing password, or new password too short |
+| `401` | Missing or invalid JWT cookie, or `currentPassword` is incorrect |
+
+---
+
+All routes below require a valid JWT cookie **and** the `admin` role.
 
 ### `GET /users`
 
