@@ -79,7 +79,7 @@ export async function loginHandler(req: Request, res: Response, next: NextFuncti
     const token = signToken(user.id, user.role);
     setAuthCookie(res, token);
 
-    res.json({ id: user.id, email: user.email, username: user.username, name: user.name, role: user.role });
+    res.json({ id: user.id, email: user.email, name: user.name, role: user.role });
   } catch (err) {
     next(err);
   }
@@ -97,7 +97,7 @@ export async function meHandler(req: Request, res: Response, next: NextFunction)
       res.status(401).json({ message: 'User not found' });
       return;
     }
-    res.json({ id: user.id, email: user.email, username: user.username, name: user.name, role: user.role });
+    res.json({ id: user.id, email: user.email, name: user.name, role: user.role });
   } catch (err) {
     next(err);
   }

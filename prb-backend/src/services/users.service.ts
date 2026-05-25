@@ -29,7 +29,6 @@ export async function updateUserRole(userId: string, newRole: PrbUserRole): Prom
 
 export interface UpdateProfileInput {
   name?: string;
-  username?: string;
   password?: string;
   currentPassword?: string;
 }
@@ -37,20 +36,12 @@ export interface UpdateProfileInput {
 export async function updateUserProfile(
   userId: string,
   input: UpdateProfileInput,
-): Promise<Pick<User, 'id' | 'email' | 'username' | 'name' | 'role'>> {
+): Promise<Pick<User, 'id' | 'email' | 'name' | 'role'>> {
   const userRepo = AppDataSource.getRepository(User);
   const user = await userRepo.findOneBy({ id: userId });
 
   if (!user) {
     throw new HttpError(404, 'User not found');
-  }
-
-  if (input.username !== undefined) {
-    const trimmed = input.username.trim();
-    if (!trimmed) {
-      throw new HttpError(400, 'username cannot be empty');
-    }
-    user.username = trimmed;
   }
 
   if (input.name !== undefined) {
@@ -80,5 +71,5 @@ export async function updateUserProfile(
 
   await userRepo.save(user);
 
-  return { id: user.id, email: user.email, username: user.username, name: user.name, role: user.role };
+  return { id: user.id, email: user.email, name: user.name, role: user.role };
 }

@@ -30,13 +30,13 @@ export async function updateRoleHandler(req: Request, res: Response, next: NextF
 
 export async function updateProfileHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { name, username, password, currentPassword } = req.body as UpdateProfileInput & { currentPassword?: string };
+    const { name, password, currentPassword } = req.body as UpdateProfileInput & { currentPassword?: string };
 
-    if (name === undefined && username === undefined && password === undefined) {
-      throw new HttpError(400, 'Provide at least one field to update: name, username, or password');
+    if (name === undefined && password === undefined) {
+      throw new HttpError(400, 'Provide at least one field to update: name or password');
     }
 
-    const updated = await updateUserProfile(req.user!.id, { name, username, password, currentPassword });
+    const updated = await updateUserProfile(req.user!.id, { name, password, currentPassword });
     res.json(updated);
   } catch (err) {
     next(err);

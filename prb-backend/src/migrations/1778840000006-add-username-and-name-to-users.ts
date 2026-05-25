@@ -4,7 +4,6 @@ export class AddUsernameAndNameToUsers1778840000006 implements MigrationInterfac
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       ALTER TABLE "prb_users"
-        ADD COLUMN "username" varchar NULL,
         ADD COLUMN "name" varchar NULL
     `);
   }
@@ -12,8 +11,7 @@ export class AddUsernameAndNameToUsers1778840000006 implements MigrationInterfac
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       ALTER TABLE "prb_users"
-        DROP COLUMN "name",
-        DROP COLUMN "username"
+        DROP COLUMN "name"
     `);
   }
 }

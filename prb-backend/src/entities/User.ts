@@ -21,9 +21,6 @@ export class User {
   googleId!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
-  username!: string | null;
-
-  @Column({ type: 'varchar', nullable: true })
   name!: string | null;
 
   @Column({ type: 'enum', enum: PrbUserRole, default: PrbUserRole.GENERAL })

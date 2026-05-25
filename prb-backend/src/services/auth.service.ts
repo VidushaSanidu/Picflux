@@ -31,7 +31,6 @@ export async function findOrCreateGoogleUser(googleId: string, email: string, di
     email: normalizedEmail,
     passwordHash: null,
     googleId,
-    username: normalizedEmail.split('@')[0],
     name: displayName ?? null,
     role: PrbUserRole.GENERAL,
     isVerified: true,
@@ -67,7 +66,6 @@ export async function register(email: string, password: string, name?: string): 
   const user = userRepo.create({
     email: normalizedEmail,
     passwordHash,
-    username: normalizedEmail.split('@')[0],
     name: name?.trim() || null,
     role: PrbUserRole.GENERAL,
     isVerified: false,
