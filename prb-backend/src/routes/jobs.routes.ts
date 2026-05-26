@@ -11,6 +11,7 @@ import {
   listJobsHandler,
   getJobHandler,
   getMyJobsHandler,
+  deleteJobHandler,
   updateJobHandler,
   proceedJobHandler,
 } from '../controllers/jobs.controller';
@@ -37,6 +38,9 @@ router.get('/', apiKeyOrAdmin, listJobsHandler);
 
 /** GET /jobs/:id — API key or admin JWT required; get a single job by ID */
 router.get('/:id', getJobHandler);
+
+/** DELETE /jobs/:id — job owner or admin only */
+router.delete('/:id', jwtAuth, requireRole(PrbUserRole.GRANTED, PrbUserRole.ADMIN), deleteJobHandler);
 
 /** PATCH /jobs/:id — API key or admin JWT required; update job with result data */
 router.patch('/:id', apiKeyOrAdmin, optionalJobUpdateUpload, updateJobHandler);

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { createJob, getAllJobs, getAdminJobs, getDailyLimitInfo, getJobById, getMyJobs, updateJob, proceedJob, AdminJobsFilter } from '../services/jobs.service';
+import { createJob, getAllJobs, getAdminJobs, getDailyLimitInfo, deleteJob, getJobById, getMyJobs, updateJob, proceedJob, AdminJobsFilter } from '../services/jobs.service';
 import { JobStatus } from '../entities/Job';
 import { HttpError } from '../utils/httpError';
 
@@ -125,6 +125,22 @@ export async function proceedJobHandler(req: Request, res: Response): Promise<vo
       return;
     }
     console.error('[proceedJobHandler]', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+/** DELETE /jobs/:id — job owner or admin only */
+export async function deleteJobHandler(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    await deleteJob(id, req.user!.id, req.user!.role);
+    res.status(204).send();
+  } catch (err) {
+    if (err instanceof HttpError) {
+      res.status(err.status).json({ message: err.message });
+      return;
+    }
+    console.error('[deleteJobHandler]', err);
     res.status(500).json({ message: 'Internal server error' });
   }
 }

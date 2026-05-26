@@ -268,6 +268,21 @@ export async function getAdminJobs(filter: AdminJobsFilter): Promise<AdminJobsRe
   return { data, total, page, limit };
 }
 
+/** Delete a job. Only the job owner or an admin may delete. */
+export async function deleteJob(id: string, requestingUserId: string, requestingUserRole: PrbUserRole): Promise<void> {
+  const job = await jobRepo().findOneBy({ id });
+
+  if (!job) {
+    throw new HttpError(404, `Job not found: ${id}`);
+  }
+
+  if (requestingUserRole !== PrbUserRole.ADMIN && job.userId !== requestingUserId) {
+    throw new HttpError(403, 'You do not have permission to delete this job');
+  }
+
+  await jobRepo().remove(job);
+}
+
 /** Update a job with result data. Optionally uploads a processed image to R2. */
 export async function updateJob(
   id: string,
