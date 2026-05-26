@@ -203,7 +203,7 @@ export async function proceedJob(
 
 export interface AdminJobsFilter {
   status?: JobStatus;
-  userId?: string;
+  userSearch?: string;
   page?: number;
   limit?: number;
 }
@@ -232,8 +232,9 @@ export async function getAdminJobs(filter: AdminJobsFilter): Promise<AdminJobsRe
     qb.andWhere('job.status = :status', { status: filter.status });
   }
 
-  if (filter.userId !== undefined) {
-    qb.andWhere('job.userId = :userId', { userId: filter.userId });
+  if (filter.userSearch !== undefined) {
+    const term = `%${filter.userSearch.toLowerCase()}%`;
+    qb.andWhere('(LOWER(user.email) LIKE :term OR LOWER(user.name) LIKE :term)', { term });
   }
 
   const [jobs, total] = await qb.getManyAndCount();
@@ -244,6 +245,7 @@ export async function getAdminJobs(filter: AdminJobsFilter): Promise<AdminJobsRe
       status: job.status,
       userId: job.userId,
       userEmail: job.user?.email ?? null,
+      userName: job.user?.name ?? null,
       userImageUrl: await getPresignedUrl(job.userImageKey),
       userImageKey: job.userImageKey,
       processedImageUrl: job.processedImageKey

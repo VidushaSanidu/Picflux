@@ -21,7 +21,7 @@ export async function dailyLimitHandler(req: Request, res: Response): Promise<vo
 /** GET /jobs/admin/all — admin only; paginated list of all jobs with optional filtering */
 export async function adminListJobsHandler(req: Request, res: Response): Promise<void> {
   try {
-    const { status, userId, page, limit } = req.query;
+    const { status, userSearch, page, limit } = req.query;
 
     if (status !== undefined && !Object.values(JobStatus).includes(status as JobStatus)) {
       res.status(400).json({ message: `status must be one of: ${Object.values(JobStatus).join(', ')}` });
@@ -30,7 +30,7 @@ export async function adminListJobsHandler(req: Request, res: Response): Promise
 
     const filter: AdminJobsFilter = {
       status: status as JobStatus | undefined,
-      userId: typeof userId === 'string' ? userId : undefined,
+      userSearch: typeof userSearch === 'string' ? userSearch : undefined,
       page: page !== undefined ? parseInt(page as string, 10) : undefined,
       limit: limit !== undefined ? parseInt(limit as string, 10) : undefined,
     };
