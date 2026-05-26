@@ -5,6 +5,8 @@ import { apiKeyOrAdmin } from '../middleware/apiKeyOrAdmin';
 import { requireImageUpload, optionalJobUpdateUpload } from '../middleware/uploadMiddleware';
 import { PrbUserRole } from '../entities/User';
 import {
+  adminListJobsHandler,
+  dailyLimitHandler,
   createJobHandler,
   listJobsHandler,
   getJobHandler,
@@ -20,6 +22,12 @@ router.post('/', jwtAuth, requireRole(PrbUserRole.GRANTED, PrbUserRole.ADMIN), r
 
 /** POST /jobs/:id/proceed — granted or admin only; transition job CLASSIFIED → PENDING */
 router.post('/:id/proceed', jwtAuth, requireRole(PrbUserRole.GRANTED, PrbUserRole.ADMIN), proceedJobHandler);
+
+/** GET /jobs/daily-limit — granted or admin; returns daily job usage and limit */
+router.get('/daily-limit', jwtAuth, requireRole(PrbUserRole.GRANTED, PrbUserRole.ADMIN), dailyLimitHandler);
+
+/** GET /jobs/admin/all — admin only; paginated list of all jobs with optional filtering */
+router.get('/admin/all', jwtAuth, requireRole(PrbUserRole.ADMIN), adminListJobsHandler);
 
 /** GET /jobs/my — granted or admin only; returns the last 10 jobs for the authenticated user */
 router.get('/my', jwtAuth, requireRole(PrbUserRole.GRANTED, PrbUserRole.ADMIN), getMyJobsHandler);

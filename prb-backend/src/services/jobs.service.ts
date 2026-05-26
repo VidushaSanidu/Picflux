@@ -1,8 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
+import { MoreThanOrEqual } from 'typeorm';
 import { AppDataSource } from '../config/database';
 import { Job, JobStatus } from '../entities/Job';
+import { PrbUserRole } from '../entities/User';
 import { uploadToR2, getPresignedUrl } from './r2.service';
 import { HttpError } from '../utils/httpError';
+
+const DAILY_JOB_LIMIT = parseInt(process.env.DAILY_JOB_LIMIT ?? '10', 10);
 
 const jobRepo = () => AppDataSource.getRepository(Job);
 
@@ -20,12 +24,57 @@ export interface UpdateJobInput {
   perturbedExampleImageMimeTypes?: string[];
 }
 
+export interface DailyLimitInfo {
+  limit: number | null;
+  used: number;
+  remaining: number | null;
+  resetsAt: string;
+}
+
+/** Return the daily job usage for a user. Admins have no limit. */
+export async function getDailyLimitInfo(userId: string, userRole: PrbUserRole): Promise<DailyLimitInfo> {
+  const startOfDay = new Date();
+  startOfDay.setUTCHours(0, 0, 0, 0);
+
+  const startOfNextDay = new Date(startOfDay);
+  startOfNextDay.setUTCDate(startOfNextDay.getUTCDate() + 1);
+
+  const used = await jobRepo().count({
+    where: { userId, createdAt: MoreThanOrEqual(startOfDay) },
+  });
+
+  if (userRole === PrbUserRole.ADMIN) {
+    return { limit: null, used, remaining: null, resetsAt: startOfNextDay.toISOString() };
+  }
+
+  return {
+    limit: DAILY_JOB_LIMIT,
+    used,
+    remaining: Math.max(0, DAILY_JOB_LIMIT - used),
+    resetsAt: startOfNextDay.toISOString(),
+  };
+}
+
 /** Upload user image to R2 and create a new Job record. */
 export async function createJob(
   imageBuffer: Buffer,
   mimeType: string,
   userId: string,
+  userRole: PrbUserRole,
 ): Promise<Job> {
+  if (userRole !== PrbUserRole.ADMIN) {
+    const startOfDay = new Date();
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const jobsToday = await jobRepo().count({
+      where: { userId, createdAt: MoreThanOrEqual(startOfDay) },
+    });
+
+    if (jobsToday >= DAILY_JOB_LIMIT) {
+      throw new HttpError(429, `Daily job limit of ${DAILY_JOB_LIMIT} reached. Try again tomorrow.`);
+    }
+  }
+
   const ext = mimeType.split('/')[1] ?? 'bin';
   const userImageKey = `prb/user/${uuidv4()}.${ext}`;
 
@@ -150,6 +199,71 @@ export async function proceedJob(
 
   job.status = JobStatus.PENDING;
   return jobRepo().save(job);
+}
+
+export interface AdminJobsFilter {
+  status?: JobStatus;
+  userId?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface AdminJobsResult {
+  data: object[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+/** Return all jobs for admins with pagination and optional filtering. */
+export async function getAdminJobs(filter: AdminJobsFilter): Promise<AdminJobsResult> {
+  const page = Math.max(1, filter.page ?? 1);
+  const limit = Math.min(100, Math.max(1, filter.limit ?? 20));
+  const skip = (page - 1) * limit;
+
+  const qb = jobRepo()
+    .createQueryBuilder('job')
+    .leftJoinAndSelect('job.user', 'user')
+    .orderBy('job.createdAt', 'DESC')
+    .skip(skip)
+    .take(limit);
+
+  if (filter.status !== undefined) {
+    qb.andWhere('job.status = :status', { status: filter.status });
+  }
+
+  if (filter.userId !== undefined) {
+    qb.andWhere('job.userId = :userId', { userId: filter.userId });
+  }
+
+  const [jobs, total] = await qb.getManyAndCount();
+
+  const data = await Promise.all(
+    jobs.map(async (job) => ({
+      id: job.id,
+      status: job.status,
+      userId: job.userId,
+      userEmail: job.user?.email ?? null,
+      userImageUrl: await getPresignedUrl(job.userImageKey),
+      userImageKey: job.userImageKey,
+      processedImageUrl: job.processedImageKey
+        ? await getPresignedUrl(job.processedImageKey)
+        : null,
+      processedImageKey: job.processedImageKey,
+      exampleImageUrls: await Promise.all(job.exampleImageKeys.map((k) => getPresignedUrl(k))),
+      exampleImageKeys: job.exampleImageKeys,
+      perturbedExampleImageUrls: await Promise.all(job.perturbedExampleImageKeys.map((k) => getPresignedUrl(k))),
+      perturbedExampleImageKeys: job.perturbedExampleImageKeys,
+      initialModelScore: job.initialModelScore,
+      initialClass: job.initialClass,
+      afterClass: job.afterClass,
+      afterScore: job.afterScore,
+      createdAt: job.createdAt,
+      updatedAt: job.updatedAt,
+    })),
+  );
+
+  return { data, total, page, limit };
 }
 
 /** Update a job with result data. Optionally uploads a processed image to R2. */

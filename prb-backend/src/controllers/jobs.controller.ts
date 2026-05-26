@@ -1,7 +1,51 @@
 import { Request, Response } from 'express';
-import { createJob, getAllJobs, getJobById, getMyJobs, updateJob, proceedJob } from '../services/jobs.service';
+import { createJob, getAllJobs, getAdminJobs, getDailyLimitInfo, getJobById, getMyJobs, updateJob, proceedJob, AdminJobsFilter } from '../services/jobs.service';
 import { JobStatus } from '../entities/Job';
 import { HttpError } from '../utils/httpError';
+
+/** GET /jobs/daily-limit — granted or admin; returns daily job usage and limit */
+export async function dailyLimitHandler(req: Request, res: Response): Promise<void> {
+  try {
+    const info = await getDailyLimitInfo(req.user!.id, req.user!.role);
+    res.json(info);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      res.status(err.status).json({ message: err.message });
+      return;
+    }
+    console.error('[dailyLimitHandler]', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+/** GET /jobs/admin/all — admin only; paginated list of all jobs with optional filtering */
+export async function adminListJobsHandler(req: Request, res: Response): Promise<void> {
+  try {
+    const { status, userId, page, limit } = req.query;
+
+    if (status !== undefined && !Object.values(JobStatus).includes(status as JobStatus)) {
+      res.status(400).json({ message: `status must be one of: ${Object.values(JobStatus).join(', ')}` });
+      return;
+    }
+
+    const filter: AdminJobsFilter = {
+      status: status as JobStatus | undefined,
+      userId: typeof userId === 'string' ? userId : undefined,
+      page: page !== undefined ? parseInt(page as string, 10) : undefined,
+      limit: limit !== undefined ? parseInt(limit as string, 10) : undefined,
+    };
+
+    const result = await getAdminJobs(filter);
+    res.json(result);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      res.status(err.status).json({ message: err.message });
+      return;
+    }
+    console.error('[adminListJobsHandler]', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
 
 /** POST /jobs — granted or admin only; requires image file upload */
 export async function createJobHandler(req: Request, res: Response): Promise<void> {
@@ -11,7 +55,7 @@ export async function createJobHandler(req: Request, res: Response): Promise<voi
       return;
     }
 
-    const job = await createJob(req.file.buffer, req.file.mimetype, req.user!.id);
+    const job = await createJob(req.file.buffer, req.file.mimetype, req.user!.id, req.user!.role);
     res.status(201).json(job);
   } catch (err) {
     if (err instanceof HttpError) {
