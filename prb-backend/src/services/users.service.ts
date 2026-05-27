@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import { AppDataSource } from '../config/database';
 import { User, PrbUserRole } from '../entities/User';
 import { HttpError } from '../utils/httpError';
+import { sendAccessGrantedEmail } from './email.service';
 
 const BCRYPT_ROUNDS = 12;
 
@@ -23,6 +24,10 @@ export async function updateUserRole(userId: string, newRole: PrbUserRole): Prom
 
   user.role = newRole;
   await userRepo.save(user);
+
+  if (newRole === PrbUserRole.GRANTED) {
+    await sendAccessGrantedEmail(user.email, user.name);
+  }
 
   return { id: user.id, email: user.email, role: user.role };
 }

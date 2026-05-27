@@ -39,3 +39,26 @@ export async function sendVerificationEmail(to: string, token: string): Promise<
     text: `Verify your PRB account\n\nClick the link below to verify your email address (expires in 24 hours):\n\n${link}\n\nIf you did not create an account, ignore this email.`,
   });
 }
+
+export async function sendAccessGrantedEmail(to: string, name: string | null): Promise<void> {
+  const frontendUrl = 'https://www.perturbai.io';
+  const transporter = createTransporter();
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM,
+    to,
+    subject: 'You\'ve been granted access to PerturbAI!',
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:auto">
+        <h2>You\'ve got access! 🎉</h2>
+        <p>Hi${name ? ` ${name}` : ''},</p>
+        <p>Great news — The wait is over! Now you have full access to <strong>PerturbAI</strong>. You can now log in and start using the platform.</p>
+        <a href="${frontendUrl}/login" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold">
+          Go to PerturbAI
+        </a>
+        <p style="font-size:12px;color:#9ca3af;margin-top:24px">If you have any questions, reply to this email and we\'ll be happy to help.</p>
+      </div>
+    `,
+    text: `Hi${name ? ` ${name}` : ''},\n\nYou\'ve been granted full access to Perturb! Log in here: ${frontendUrl}/login\n\nIf you have any questions, just reply to this email.`,
+  });
+}
