@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import passport from '../config/passport';
-import { register, login, verifyEmail } from '../services/auth.service';
+import { register, login, verifyEmail, resendVerificationEmail } from '../services/auth.service';
 import { signToken } from '../utils/jwt';
 import { HttpError } from '../utils/httpError';
 import { User } from '../entities/User';
@@ -53,6 +53,21 @@ export async function verifyEmailHandler(req: Request, res: Response, next: Next
     await verifyEmail(token);
     const frontendOrigin = getFrontendOrigin();
     res.redirect(`${frontendOrigin}`);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function resendVerificationHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { email } = req.body as { email?: unknown };
+
+    if (typeof email !== 'string') {
+      throw new HttpError(400, 'email is required');
+    }
+
+    await resendVerificationEmail(email);
+    res.json({ message: 'If that email is registered and unverified, a new verification link has been sent.' });
   } catch (err) {
     next(err);
   }

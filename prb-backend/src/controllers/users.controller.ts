@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { PrbUserRole } from '../entities/User';
-import { listUsers, updateUserRole, updateUserProfile, setUserWaitlist, UpdateProfileInput } from '../services/users.service';
+import { listUsers, updateUserRole, updateUserProfile, setUserWaitlist, deleteUser, UpdateProfileInput } from '../services/users.service';
 import { HttpError } from '../utils/httpError';
 
 export async function listUsersHandler(_req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -48,6 +48,16 @@ export async function setWaitlistHandler(req: Request, res: Response, next: Next
     const { id } = req.params;
     const updated = await setUserWaitlist(id, true);
     res.json(updated);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function deleteUserHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { id } = req.params;
+    await deleteUser(id);
+    res.status(204).send();
   } catch (err) {
     next(err);
   }

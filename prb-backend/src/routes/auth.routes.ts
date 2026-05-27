@@ -7,6 +7,7 @@ import {
   googleInitHandler,
   googleCallbackHandler,
   verifyEmailHandler,
+  resendVerificationHandler,
 } from '../controllers/auth.controller';
 import { jwtAuth } from '../middleware/jwtAuth';
 
@@ -17,6 +18,7 @@ router.post('/login', loginHandler);
 router.post('/logout', logoutHandler);
 router.get('/me', jwtAuth, meHandler);
 router.get('/verify-email', verifyEmailHandler);
+router.post('/resend-verification', resendVerificationHandler);
 
 // Google OAuth
 router.get('/google', googleInitHandler);

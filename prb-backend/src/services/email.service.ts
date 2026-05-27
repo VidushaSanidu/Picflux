@@ -21,7 +21,7 @@ export async function sendVerificationEmail(to: string, token: string): Promise<
   await transporter.sendMail({
     from: process.env.SMTP_FROM,
     to,
-    subject: 'Verify your PRB account',
+    subject: 'Verify your Perturb account',
     html: `
       <div style="font-family:sans-serif;max-width:480px;margin:auto">
         <h2>Verify your email address</h2>

@@ -87,3 +87,14 @@ export async function setUserWaitlist(userId: string, waitlist: boolean): Promis
 
   return { id: user.id, email: user.email, waitlist: user.waitlist };
 }
+
+export async function deleteUser(userId: string): Promise<void> {
+  const userRepo = AppDataSource.getRepository(User);
+  const user = await userRepo.findOneBy({ id: userId });
+
+  if (!user) {
+    throw new HttpError(404, 'User not found');
+  }
+
+  await userRepo.remove(user);
+}

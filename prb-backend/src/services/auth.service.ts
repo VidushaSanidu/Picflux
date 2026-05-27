@@ -120,3 +120,20 @@ export async function verifyEmail(token: string): Promise<void> {
   user.verificationTokenExpiresAt = null;
   await userRepo.save(user);
 }
+
+export async function resendVerificationEmail(email: string): Promise<void> {
+  const userRepo = AppDataSource.getRepository(User);
+  const user = await userRepo.findOne({ where: { email: email.toLowerCase().trim() } });
+
+  // Return silently if account doesn't exist or is already verified (avoid enumeration)
+  if (!user || user.isVerified) return;
+
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+  const verificationTokenExpiresAt = new Date(Date.now() + VERIFICATION_TOKEN_TTL_MS);
+
+  user.verificationToken = verificationToken;
+  user.verificationTokenExpiresAt = verificationTokenExpiresAt;
+  await userRepo.save(user);
+
+  await sendVerificationEmail(user.email, verificationToken);
+}

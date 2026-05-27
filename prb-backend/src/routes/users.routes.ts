@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { listUsersHandler, updateRoleHandler, updateProfileHandler, setWaitlistHandler } from '../controllers/users.controller';
+import { listUsersHandler, updateRoleHandler, updateProfileHandler, setWaitlistHandler, deleteUserHandler } from '../controllers/users.controller';
 import { jwtAuth } from '../middleware/jwtAuth';
 import { requireRole } from '../middleware/requireRole';
 import { PrbUserRole } from '../entities/User';
@@ -17,5 +17,8 @@ router.patch('/:id/role', jwtAuth, requireRole(PrbUserRole.ADMIN), updateRoleHan
 
 /** PATCH /users/:id/waitlist — any authenticated user; add themselves to the waitlist */
 router.patch('/:id/waitlist', jwtAuth, setWaitlistHandler);
+
+/** DELETE /users/:id — admin only; delete a user */
+router.delete('/:id', jwtAuth, requireRole(PrbUserRole.ADMIN), deleteUserHandler);
 
 export default router;
