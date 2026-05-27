@@ -5,12 +5,12 @@ import { HttpError } from '../utils/httpError';
 
 const BCRYPT_ROUNDS = 12;
 
-export async function listUsers(): Promise<Pick<User, 'id' | 'email' | 'role' | 'createdAt'>[]> {
+export async function listUsers(): Promise<Pick<User, 'id' | 'email' | 'role' | 'waitlist' | 'createdAt'>[]> {
   const users = await AppDataSource.getRepository(User).find({
     order: { createdAt: 'DESC' },
   });
 
-  return users.map(({ id, email, role, createdAt }) => ({ id, email, role, createdAt }));
+  return users.map(({ id, email, role, waitlist, createdAt }) => ({ id, email, role, waitlist, createdAt }));
 }
 
 export async function updateUserRole(userId: string, newRole: PrbUserRole): Promise<Pick<User, 'id' | 'email' | 'role'>> {
@@ -72,4 +72,18 @@ export async function updateUserProfile(
   await userRepo.save(user);
 
   return { id: user.id, email: user.email, name: user.name, role: user.role };
+}
+
+export async function setUserWaitlist(userId: string, waitlist: boolean): Promise<Pick<User, 'id' | 'email' | 'waitlist'>> {
+  const userRepo = AppDataSource.getRepository(User);
+  const user = await userRepo.findOneBy({ id: userId });
+
+  if (!user) {
+    throw new HttpError(404, 'User not found');
+  }
+
+  user.waitlist = waitlist;
+  await userRepo.save(user);
+
+  return { id: user.id, email: user.email, waitlist: user.waitlist };
 }

@@ -29,6 +29,9 @@ export class User {
   @Column({ name: 'is_verified', type: 'boolean', default: false })
   isVerified!: boolean;
 
+  @Column({ name: 'waitlist', type: 'boolean', default: false })
+  waitlist!: boolean;
+
   @Column({ name: 'verification_token', type: 'varchar', nullable: true })
   verificationToken!: string | null;
 
