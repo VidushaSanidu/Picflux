@@ -1141,8 +1141,6 @@ Validator dashboards — each validator maintains their own view of the subnet, 
 
 ### `POST /api/v1/report`
 
-Submit a validator's miner evaluation data. Each call fully replaces that validator's stored dashboard (not a patch — the entire dataset is overwritten).
-
 **Auth:** Wallet signature — no API key or JWT cookie. Validators sign the raw request body bytes with their sr25519 hotkey.
 
 **Required Headers**
