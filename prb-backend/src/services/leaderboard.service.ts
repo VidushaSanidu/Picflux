@@ -34,6 +34,14 @@ export async function getReportByHotkey(
   });
 }
 
+export async function getAllValidatorHotkeys(): Promise<string[]> {
+  const rows = await AppDataSource.getRepository(ValidatorReport).find({
+    select: { validatorHotkey: true },
+    order: { updatedAt: 'DESC' },
+  });
+  return rows.map((r) => r.validatorHotkey);
+}
+
 // ─── Burn Rate ────────────────────────────────────────────────────────────────
 
 const BURN_RATE_ID = 1;

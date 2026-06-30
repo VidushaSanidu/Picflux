@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import {
   upsertReport,
   getReportByHotkey,
+  getAllValidatorHotkeys,
   getBurnRate,
   setBurnRate,
 } from '../services/leaderboard.service';
@@ -70,6 +71,20 @@ export async function leaderboardHandler(
       })),
       updatedAt: report.updatedAt.toISOString(),
     });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ─── GET /api/v1/validators ──────────────────────────────────────────────────────────────────────────────
+export async function listValidatorsHandler(
+  _req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const hotkeys = await getAllValidatorHotkeys();
+    res.json({ validators: hotkeys });
   } catch (err) {
     next(err);
   }

@@ -1208,6 +1208,22 @@ Submit a validator's miner evaluation data. Each call fully replaces that valida
 
 ---
 
+### `GET /api/v1/validators`
+
+List the SS58 hotkeys of all validators that have submitted at least one report. Public — no authentication required. Ordered by most recently updated first.
+
+**Response `200`**
+```json
+{
+  "validators": [
+    "5F3sa2TJ...",
+    "5GrwvaEF..."
+  ]
+}
+```
+
+---
+
 ### `GET /api/v1/leaderboard/:hotkey`
 
 Retrieve the stored dashboard for a specific validator. Public — no authentication required.
