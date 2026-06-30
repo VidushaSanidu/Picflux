@@ -1132,3 +1132,164 @@ Returns at most 10 items. `processedImageUrl`/`processedImageKey` are `null` unt
 |------|--------|
 | `401` | Missing or invalid JWT cookie |
 | `403` | Authenticated but role is not `granted` or `admin` |
+
+---
+
+## Leaderboard
+
+Validator dashboards — each validator maintains their own view of the subnet, which the public can read back per-validator.
+
+### `POST /api/v1/report`
+
+Submit a validator's miner evaluation data. Each call fully replaces that validator's stored dashboard (not a patch — the entire dataset is overwritten).
+
+**Auth:** Wallet signature — no API key or JWT cookie. Validators sign the raw request body bytes with their sr25519 hotkey.
+
+**Required Headers**
+
+| Header | Description |
+|--------|-------------|
+| `X-Validator-Hotkey` | SS58-encoded validator hotkey |
+| `X-Signature` | `0x`-prefixed hex sr25519 signature of the exact raw JSON body bytes |
+
+**Request Body** `application/json`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `task_id` | string | ✓ | Identifier of the evaluated task |
+| `timestamp` | string | ✓ | ISO 8601 datetime — used for replay protection (rejected if older than `SIGNATURE_MAX_AGE_SECONDS`) |
+| `validator_hotkey` | string | ✓ | Must match `X-Validator-Hotkey` header exactly |
+| `network` | object | ✓ | Network-wide aggregate statistics (see below) |
+| `miners` | array | ✓ | Per-miner evaluation results (see below) |
+
+**`network` object**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `total_miners` | number | Total miners on the subnet |
+| `available_miners` | number | Miners that responded |
+| `avg_score` | number | Network average score |
+| `avg_rmse` | number | Network average RMSE |
+| `avg_norm` | number | Network average norm |
+| `success_count` | number | Number of valid responses |
+
+**`miners` array item**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `uid` | number | Miner UID on the subnet |
+| `hotkey` | string | Miner hotkey (SS58) |
+| `coldkey` | string | Miner coldkey (SS58) |
+| `incentive` | number | Miner incentive score |
+| `avg_score` | number | Running average score |
+| `last_score` | number | Score from this evaluation |
+| `rmse` | number | Root mean squared error |
+| `norm` | number | Norm value |
+| `result` | string | `"valid"` \| `"timeout"` \| `"rejected"` |
+| `image_url` | string | URL of the evaluated image (empty string if none) |
+
+**Response `200`**
+```json
+{
+  "ok": true,
+  "task_id": "task_48036",
+  "miners": 58
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `400` | Empty request body |
+| `401` | Missing headers, invalid signature, or timestamp older than `SIGNATURE_MAX_AGE_SECONDS` |
+| `403` | `X-Validator-Hotkey` does not match `body.validator_hotkey`, or hotkey is not a registered validator |
+| `422` | Invalid JSON body or missing required fields |
+
+---
+
+### `GET /api/v1/leaderboard/:hotkey`
+
+Retrieve the stored dashboard for a specific validator. Public — no authentication required.
+
+**Path Parameters**
+
+| Parameter | Description |
+|-----------|-------------|
+| `hotkey` | SS58 hotkey of the validator |
+
+**Response `200`**
+```json
+{
+  "validatorHotkey": "5F3sa2TJ...",
+  "taskId": "task_48036",
+  "timestamp": "2026-06-27T23:18:00.000Z",
+  "network": {
+    "totalMiners": 58,
+    "availableMiners": 42,
+    "avgScore": 0.579,
+    "avgRmse": 0.0974,
+    "avgNorm": 0.064,
+    "successCount": 31
+  },
+  "miners": [
+    {
+      "uid": 12,
+      "hotkey": "5GrwvaEF...",
+      "coldkey": "5DAAnrj7...",
+      "incentive": 0.7,
+      "avgScore": 0.9215,
+      "lastScore": 0.9342,
+      "rmse": 0.0841,
+      "norm": 0.0117,
+      "result": "valid",
+      "imageUrl": "https://..."
+    }
+  ],
+  "updatedAt": "2026-06-27T23:18:05.000Z"
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `404` | No data found for this validator hotkey |
+
+---
+
+### `GET /api/v1/burn-rate`
+
+Return the current burn rate. Public — no authentication required.
+
+**Response `200`**
+```json
+{ "burnRate": 0.2 }
+```
+
+---
+
+### `POST /api/v1/burn-rate`
+
+Set the burn rate.
+
+**Auth:** `Authorization: Bearer <PRB_API_KEY>` **or** admin JWT cookie required.
+
+**Request Body** `application/json`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `burnRate` | number | ✓ | New burn rate value |
+
+**Response `200`**
+```json
+{ "ok": true, "burnRate": 0.2 }
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `401` | Missing or invalid API key / JWT cookie |
+| `422` | `burnRate` is not a finite number |
+

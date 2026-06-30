@@ -6,6 +6,7 @@ import './config/passport'; // register strategies (side-effect)
 import jobsRoutes from './routes/jobs.routes';
 import authRoutes from './routes/auth.routes';
 import usersRoutes from './routes/users.routes';
+import leaderboardRoutes from './routes/leaderboard.routes';
 import { HttpError } from './utils/httpError';
 
 export function createApp(): express.Application {
@@ -23,7 +24,13 @@ export function createApp(): express.Application {
   );
 
   // ─── Body parsers ─────────────────────────────────────────────────────────
-  app.use(express.json());
+  app.use(
+    express.json({
+      verify: (req: Request, _res, buf) => {
+        req.rawBody = buf;
+      },
+    }),
+  );
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
   app.use(passport.initialize());
@@ -37,6 +44,7 @@ export function createApp(): express.Application {
   app.use('/auth', authRoutes);
   app.use('/users', usersRoutes);
   app.use('/jobs', jobsRoutes);
+  app.use('/api/v1', leaderboardRoutes);
 
   // ─── 404 ──────────────────────────────────────────────────────────────────
   app.use((_req, res) => {

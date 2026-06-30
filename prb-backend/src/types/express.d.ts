@@ -15,5 +15,8 @@ declare module 'express-serve-static-core' {
       id: string;
       role: PrbUserRole;
     };
+    rawBody?: Buffer;
+    validatorHotkey?: string;
+    validatorStake?: number;
   }
 }
