@@ -41,8 +41,7 @@ async function verifySignature(
       signatureHex.startsWith('0x') ? signatureHex : `0x${signatureHex}`,
     );
     return sr25519Verify(bodyBytes, signature, publicKey);
-  } catch (err) {
-    console.error('[validatorAuth] signature verify error:', err);
+  } catch {
     return false;
   }
 }
