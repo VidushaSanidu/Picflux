@@ -5,6 +5,7 @@ import {
   reportHandler,
   leaderboardHandler,
   listValidatorsHandler,
+  clearLeaderboardHandler,
   getBurnRateHandler,
   setBurnRateHandler,
 } from '../controllers/leaderboard.controller';
@@ -19,6 +20,9 @@ router.get('/validators', listValidatorsHandler);
 
 // GET /api/v1/leaderboard/:hotkey — public read
 router.get('/leaderboard/:hotkey', leaderboardHandler);
+
+// DELETE /api/v1/leaderboard/clear — admin only (API key or admin JWT)
+router.delete('/leaderboard/clear', apiKeyOrAdmin, clearLeaderboardHandler);
 
 // POST /api/v1/burn-rate — admin only (API key or admin JWT)
 router.post('/burn-rate', apiKeyOrAdmin, setBurnRateHandler);

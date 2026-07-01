@@ -42,6 +42,10 @@ export async function getAllValidatorHotkeys(): Promise<string[]> {
   return rows.map((r) => r.validatorHotkey);
 }
 
+export async function clearLeaderboardReports(): Promise<void> {
+  await AppDataSource.getRepository(ValidatorReport).clear();
+}
+
 // ─── Burn Rate ────────────────────────────────────────────────────────────────
 
 const BURN_RATE_ID = 1;

@@ -3,6 +3,7 @@ import {
   upsertReport,
   getReportByHotkey,
   getAllValidatorHotkeys,
+  clearLeaderboardReports,
   getBurnRate,
   setBurnRate,
 } from '../services/leaderboard.service';
@@ -45,6 +46,23 @@ export async function leaderboardHandler(
       return;
     }
 
+    const sortedMiners = [...report.miners].sort(
+      (a, b) => (b.avg_score ?? 0) - (a.avg_score ?? 0),
+    );
+
+    const rankedMiners = sortedMiners.reduce<Array<{ rank: number; miner: (typeof report.miners)[number] }>>(
+      (acc, miner, index) => {
+        const previous = sortedMiners[index - 1];
+        const rank = previous && previous.avg_score === miner.avg_score
+          ? acc[acc.length - 1].rank
+          : index + 1;
+
+        acc.push({ rank, miner });
+        return acc;
+      },
+      [],
+    );
+
     res.json({
       validatorHotkey: report.validatorHotkey,
       taskId: report.taskId,
@@ -57,7 +75,8 @@ export async function leaderboardHandler(
         avgNorm: report.network.avg_norm,
         successCount: report.network.success_count,
       },
-      miners: report.miners.map((m) => ({
+      miners: rankedMiners.map(({ rank, miner: m }) => ({
+        rank,
         uid: m.uid,
         hotkey: m.hotkey,
         coldkey: m.coldkey,
@@ -85,6 +104,20 @@ export async function listValidatorsHandler(
   try {
     const hotkeys = await getAllValidatorHotkeys();
     res.json({ validators: hotkeys });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ─── DELETE /api/v1/leaderboard/clear ────────────────────────────────────────
+export async function clearLeaderboardHandler(
+  _req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    await clearLeaderboardReports();
+    res.json({ ok: true, message: 'Leaderboard cleared' });
   } catch (err) {
     next(err);
   }
