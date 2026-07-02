@@ -6,6 +6,7 @@ import {
   clearLeaderboardReports,
   getBurnRate,
   setBurnRate,
+  updateLastWeightUpdate,
 } from '../services/leaderboard.service';
 import { ReportBody } from '../middleware/validatorAuth';
 
@@ -25,6 +26,43 @@ export async function reportHandler(
       ok: true,
       task_id: report.taskId,
       miners: report.miners.length,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ─── POST /api/v1/last-weight-update ───────────────────────────────────────
+export async function updateLastWeightUpdateHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const body = req.body as { validator_hotkey?: string; last_weight_update?: number };
+    const hotkey = req.validatorHotkey ?? body.validator_hotkey;
+
+    if (typeof hotkey !== 'string' || !hotkey) {
+      res.status(422).json({ message: 'validator_hotkey is required' });
+      return;
+    }
+
+    if (typeof body.last_weight_update !== 'number' || !isFinite(body.last_weight_update)) {
+      res.status(422).json({ message: 'last_weight_update must be a finite number' });
+      return;
+    }
+
+    const report = await updateLastWeightUpdate(hotkey, body.last_weight_update);
+
+    if (!report) {
+      res.status(404).json({ message: 'No report found for this validator' });
+      return;
+    }
+
+    res.json({
+      ok: true,
+      validatorHotkey: report.validatorHotkey,
+      lastWeightUpdate: report.lastWeightUpdate,
     });
   } catch (err) {
     next(err);

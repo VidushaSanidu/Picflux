@@ -46,6 +46,21 @@ export async function getAllValidatorHotkeys(): Promise<string[]> {
   return rows.map((r) => r.validatorHotkey);
 }
 
+export async function updateLastWeightUpdate(
+  hotkey: string,
+  lastWeightUpdate: number,
+): Promise<ValidatorReport | null> {
+  const repo = AppDataSource.getRepository(ValidatorReport);
+  const existing = await repo.findOne({ where: { validatorHotkey: hotkey } });
+
+  if (!existing) {
+    return null;
+  }
+
+  existing.lastWeightUpdate = lastWeightUpdate;
+  return repo.save(existing);
+}
+
 export async function clearLeaderboardReports(): Promise<void> {
   await AppDataSource.getRepository(ValidatorReport).clear();
 }

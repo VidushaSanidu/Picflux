@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { validatorAuth } from '../middleware/validatorAuth';
+import { validatorAuth, validatorAuthWithOptions } from '../middleware/validatorAuth';
 import { apiKeyOrAdmin } from '../middleware/apiKeyOrAdmin';
 import {
   reportHandler,
+  updateLastWeightUpdateHandler,
   leaderboardHandler,
   listValidatorsHandler,
   clearLeaderboardHandler,
@@ -14,6 +15,13 @@ const router = Router();
 
 // POST /api/v1/report — validators write (sr25519 signed)
 router.post('/report', validatorAuth, reportHandler);
+
+// POST /api/v1/last-weight-update — validators update only last_weight_update (sr25519 signed)
+router.post(
+  '/last-weight-update',
+  validatorAuthWithOptions({ requireFullReport: false }),
+  updateLastWeightUpdateHandler,
+);
 
 // GET /api/v1/validators — list all validator hotkeys (public)
 router.get('/validators', listValidatorsHandler);

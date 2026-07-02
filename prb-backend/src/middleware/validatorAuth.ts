@@ -19,6 +19,10 @@ export interface ReportBody {
   last_weight_update?: number;
 }
 
+export interface ValidatorAuthOptions {
+  requireFullReport?: boolean;
+}
+
 // ─── sr25519 signature verification ──────────────────────────────────────────
 async function verifySignature(
   hotkeySS58: string,
@@ -62,93 +66,121 @@ function isRegisteredValidator(_hotkey: string): [boolean, number] {
 }
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
-export async function validatorAuth(
+export function validatorAuth(
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  const hotkey = req.headers['x-validator-hotkey'] as string | undefined;
-  const signature = req.headers['x-signature'] as string | undefined;
+  return validatorAuthWithOptions()(req, res, next);
+}
 
-  if (!hotkey || !signature) {
-    res
-      .status(401)
-      .json({ message: 'Missing X-Validator-Hotkey or X-Signature header' });
-    return;
-  }
+export function validatorAuthWithOptions(options: ValidatorAuthOptions = {}) {
+  return async function validatorAuthMiddleware(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    const hotkey = req.headers['x-validator-hotkey'] as string | undefined;
+    const signature = req.headers['x-signature'] as string | undefined;
 
-  // ── 1. Verify the sr25519 signature over the raw body ─────────────────────
-  const rawBody = req.rawBody;
-  if (!rawBody || rawBody.length === 0) {
-    res.status(400).json({ message: 'Empty request body' });
-    return;
-  }
-
-  const sigValid = await verifySignature(hotkey, signature, rawBody);
-  if (!sigValid) {
-    res.status(401).json({ message: 'Invalid signature' });
-    return;
-  }
-
-  // ── 2. Parse and validate the JSON body ───────────────────────────────────
-  let body: ReportBody;
-  try {
-    body = JSON.parse(rawBody.toString()) as ReportBody;
-  } catch {
-    res.status(422).json({ message: 'Invalid JSON body' });
-    return;
-  }
-
-  if (
-    !body.task_id ||
-    !body.timestamp ||
-    !body.validator_hotkey ||
-    !body.network ||
-    !Array.isArray(body.miners)
-  ) {
-    res.status(422).json({ message: 'Missing required fields in body' });
-    return;
-  }
-
-  // ── 3. Signing hotkey must match body.validator_hotkey ────────────────────
-  if (body.validator_hotkey !== hotkey) {
-    res
-      .status(403)
-      .json({ message: 'X-Validator-Hotkey does not match body.validator_hotkey' });
-    return;
-  }
-
-  // ── 4. Replay protection: reject stale timestamps ─────────────────────────
-  let ageSeconds: number;
-  try {
-    const ts = new Date(body.timestamp);
-    if (isNaN(ts.getTime())) {
-      throw new Error('unparseable');
+    if (!hotkey || !signature) {
+      res
+        .status(401)
+        .json({ message: 'Missing X-Validator-Hotkey or X-Signature header' });
+      return;
     }
-    ageSeconds = (Date.now() - ts.getTime()) / 1000;
-  } catch {
-    res.status(422).json({ message: 'Invalid timestamp format' });
-    return;
-  }
 
-  if (ageSeconds > SIGNATURE_MAX_AGE_S) {
-    res
-      .status(401)
-      .json({ message: `Report too old (${Math.round(ageSeconds)}s > ${SIGNATURE_MAX_AGE_S}s)` });
-    return;
-  }
+    // ── 1. Verify the sr25519 signature over the raw body ─────────────────────
+    const rawBody = req.rawBody;
+    if (!rawBody || rawBody.length === 0) {
+      res.status(400).json({ message: 'Empty request body' });
+      return;
+    }
 
-  // ── 5. Verify hotkey is a registered validator with stake ─────────────────
-  const [isValidator, stake] = isRegisteredValidator(hotkey);
-  if (!isValidator) {
-    res.status(403).json({ message: 'Hotkey is not a registered validator' });
-    return;
-  }
+    const sigValid = await verifySignature(hotkey, signature, rawBody);
+    if (!sigValid) {
+      res.status(401).json({ message: 'Invalid signature' });
+      return;
+    }
 
-  // Attach parsed data for downstream handlers
-  req.body = body;
-  req.validatorHotkey = hotkey;
-  req.validatorStake = stake;
+    // ── 2. Parse and validate the JSON body ───────────────────────────────────
+    let body: Record<string, unknown>;
+    try {
+      body = JSON.parse(rawBody.toString()) as Record<string, unknown>;
+    } catch {
+      res.status(422).json({ message: 'Invalid JSON body' });
+      return;
+    }
 
-  next();
+    const validatorHotkey = typeof body.validator_hotkey === 'string' ? body.validator_hotkey : undefined;
+
+    if (options.requireFullReport !== false) {
+      if (
+        !body.task_id ||
+        !body.timestamp ||
+        !validatorHotkey ||
+        !body.network ||
+        !Array.isArray(body.miners)
+      ) {
+        res.status(422).json({ message: 'Missing required fields in body' });
+        return;
+      }
+    } else if (!validatorHotkey) {
+      res.status(422).json({ message: 'Missing validator_hotkey in body' });
+      return;
+    } else if (
+      typeof body.last_weight_update !== 'number' ||
+      !isFinite(body.last_weight_update)
+    ) {
+      res.status(422).json({ message: 'last_weight_update must be a finite number' });
+      return;
+    }
+
+    // ── 3. Signing hotkey must match body.validator_hotkey ────────────────────
+    if (validatorHotkey !== hotkey) {
+      res
+        .status(403)
+        .json({ message: 'X-Validator-Hotkey does not match body.validator_hotkey' });
+      return;
+    }
+
+    // ── 4. Replay protection: reject stale timestamps ─────────────────────────
+    if (typeof body.timestamp === 'string') {
+      let ageSeconds: number;
+      try {
+        const ts = new Date(body.timestamp);
+        if (isNaN(ts.getTime())) {
+          throw new Error('unparseable');
+        }
+        ageSeconds = (Date.now() - ts.getTime()) / 1000;
+      } catch {
+        res.status(422).json({ message: 'Invalid timestamp format' });
+        return;
+      }
+
+      if (ageSeconds > SIGNATURE_MAX_AGE_S) {
+        res
+          .status(401)
+          .json({ message: `Report too old (${Math.round(ageSeconds)}s > ${SIGNATURE_MAX_AGE_S}s)` });
+        return;
+      }
+    } else if (options.requireFullReport !== false) {
+      res.status(422).json({ message: 'Missing timestamp in body' });
+      return;
+    }
+
+    // ── 5. Verify hotkey is a registered validator with stake ─────────────────
+    const [isValidator, stake] = isRegisteredValidator(hotkey);
+    if (!isValidator) {
+      res.status(403).json({ message: 'Hotkey is not a registered validator' });
+      return;
+    }
+
+    // Attach parsed data for downstream handlers
+    req.body = body as unknown as ReportBody;
+    req.validatorHotkey = hotkey;
+    req.validatorStake = stake;
+
+    next();
+  };
 }
