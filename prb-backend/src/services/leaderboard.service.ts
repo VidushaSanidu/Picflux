@@ -20,7 +20,11 @@ export async function upsertReport(
   entity.taskId = data.task_id;
   entity.validatorTimestamp = new Date(data.timestamp);
   entity.network = data.network;
-  entity.miners = data.miners;
+  entity.miners = data.miners.map((miner) => ({
+    ...miner,
+    ...(Array.isArray(miner.graph) ? { graph: miner.graph } : {}),
+  }));
+  entity.lastWeightUpdate = typeof data.last_weight_update === 'number' ? data.last_weight_update : null;
   entity.stake = stake;
 
   return repo.save(entity);

@@ -1159,6 +1159,7 @@ Validator dashboards — each validator maintains their own view of the subnet, 
 | `validator_hotkey` | string | ✓ | Must match `X-Validator-Hotkey` header exactly |
 | `network` | object | ✓ | Network-wide aggregate statistics (see below) |
 | `miners` | array | ✓ | Per-miner evaluation results (see below) |
+| `last_weight_update` | number | — | Optional leaderboard-wide last weight update value |
 
 **`network` object**
 
@@ -1185,6 +1186,7 @@ Validator dashboards — each validator maintains their own view of the subnet, 
 | `norm` | number | Norm value |
 | `result` | string | `"valid"` \| `"timeout"` \| `"rejected"` |
 | `image_url` | string | URL of the evaluated image (empty string if none) |
+| `graph` | array[number] | Optional miner score history; length may vary and typically contains the latest scores |
 
 **Response `200`**
 ```json
@@ -1238,6 +1240,7 @@ Retrieve the stored dashboard for a specific validator. Public — no authentica
   "validatorHotkey": "5F3sa2TJ...",
   "taskId": "task_48036",
   "timestamp": "2026-06-27T23:18:00.000Z",
+  "lastWeightUpdate": 123.45,
   "network": {
     "totalMiners": 58,
     "availableMiners": 42,
@@ -1257,7 +1260,8 @@ Retrieve the stored dashboard for a specific validator. Public — no authentica
       "rmse": 0.0841,
       "norm": 0.0117,
       "result": "valid",
-      "imageUrl": "https://..."
+      "imageUrl": "https://...",
+      "graph": [0.91, 0.92, 0.94]
     }
   ],
   "updatedAt": "2026-06-27T23:18:05.000Z"
@@ -1281,7 +1285,11 @@ Return the current burn rate. Public — no authentication required.
 { "burnRate": 0.2 }
 ```
 
----
+### `DELETE /api/v1/leaderboard/clear`
+**Auth:** `Authorization: Bearer <PRB_API_KEY>` **or** admin JWT cookie required.
+
+clear the leaderboard.
+
 
 ### `POST /api/v1/burn-rate`
 

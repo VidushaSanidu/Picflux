@@ -75,6 +75,7 @@ export async function leaderboardHandler(
         avgNorm: report.network.avg_norm,
         successCount: report.network.success_count,
       },
+      lastWeightUpdate: report.lastWeightUpdate ?? null,
       miners: rankedMiners.map(({ rank, miner: m }) => ({
         rank,
         uid: m.uid,
@@ -87,6 +88,7 @@ export async function leaderboardHandler(
         norm: m.norm,
         result: m.result,
         imageUrl: m.image_url,
+        graph: m.graph,
       })),
       updatedAt: report.updatedAt.toISOString(),
     });

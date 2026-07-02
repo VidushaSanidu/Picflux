@@ -16,6 +16,7 @@ export interface ReportBody {
   validator_hotkey: string;
   network: NetworkBlock;
   miners: MinerData[];
+  last_weight_update?: number;
 }
 
 // ─── sr25519 signature verification ──────────────────────────────────────────

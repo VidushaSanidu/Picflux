@@ -26,6 +26,7 @@ export interface MinerData {
   norm: number;
   result: 'valid' | 'timeout' | 'rejected';
   image_url: string;
+  graph?: number[];
 }
 
 @Entity('leaderboard_validator_reports')
@@ -47,6 +48,9 @@ export class ValidatorReport {
 
   @Column({ type: 'jsonb' })
   miners!: MinerData[];
+
+  @Column({ name: 'last_weight_update', type: 'double precision', nullable: true })
+  lastWeightUpdate?: number | null;
 
   @Column({ type: 'double precision', default: 1.0 })
   stake!: number;
