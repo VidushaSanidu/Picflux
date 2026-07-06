@@ -24,7 +24,6 @@ export async function upsertReport(
     ...miner,
     ...(Array.isArray(miner.graph) ? { graph: miner.graph } : {}),
   }));
-  entity.lastWeightUpdate = typeof data.last_weight_update === 'number' ? data.last_weight_update : null;
   entity.stake = stake;
 
   return repo.save(entity);

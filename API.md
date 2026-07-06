@@ -1159,7 +1159,6 @@ Validator dashboards — each validator maintains their own view of the subnet, 
 | `validator_hotkey` | string | ✓ | Must match `X-Validator-Hotkey` header exactly |
 | `network` | object | ✓ | Network-wide aggregate statistics (see below) |
 | `miners` | array | ✓ | Per-miner evaluation results (see below) |
-| `last_weight_update` | number | — | Optional leaderboard-wide last weight update value |
 
 **`network` object**
 
