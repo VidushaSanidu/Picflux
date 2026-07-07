@@ -7,6 +7,7 @@ import jobsRoutes from './routes/jobs.routes';
 import authRoutes from './routes/auth.routes';
 import usersRoutes from './routes/users.routes';
 import leaderboardRoutes from './routes/leaderboard.routes';
+import contactsRoutes from './routes/contacts.routes';
 import { HttpError } from './utils/httpError';
 
 export function createApp(): express.Application {
@@ -45,6 +46,7 @@ export function createApp(): express.Application {
   app.use('/users', usersRoutes);
   app.use('/jobs', jobsRoutes);
   app.use('/api/v1', leaderboardRoutes);
+  app.use('/contacts', contactsRoutes);
 
   // ─── 404 ──────────────────────────────────────────────────────────────────
   app.use((_req, res) => {
