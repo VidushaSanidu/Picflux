@@ -1314,3 +1314,318 @@ Set the burn rate.
 | `401` | Missing or invalid API key / JWT cookie |
 | `422` | `burnRate` is not a finite number |
 
+---
+
+## Blogs
+
+Blog publishing workflow for PRB:
+
+- Any authenticated user (`general`/`granted`/`admin`) can upload a cover image and create a blog.
+- New blogs are created with `pending` status.
+- If a non-admin user edits a blog, status automatically becomes `edited`.
+- Admin reviews and sets status (for example `approved` or `archived`).
+- Only blogs with `approved` status are visible on public endpoints.
+
+**Blog status values:** `pending` | `approved` | `archived` | `edited`
+
+---
+
+### `POST /blogs/upload-image`
+
+Upload a blog image and receive both the storage key and a short-lived presigned URL.
+
+**Auth:** JWT cookie required. Allowed roles: `general` | `granted` | `admin`.
+
+**Request Body** `multipart/form-data`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `image` | file | ✓ | Blog image (JPEG/PNG/WebP/GIF, max 10 MB) |
+
+**Response `201`**
+```json
+{
+  "key": "prb/blogs/<userId>/<uuid>.png",
+  "url": "https://r2.example.com/..."
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `400` | Missing/invalid file |
+| `401` | Missing or invalid JWT cookie |
+| `403` | Authenticated but role is not allowed |
+
+---
+
+### `POST /blogs`
+
+Create a blog post.
+
+**Auth:** JWT cookie required. Allowed roles: `general` | `granted` | `admin`.
+
+**Request Body** `application/json`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `title` | string | ✓ | Max 256 characters |
+| `coverImageKey` | string | ✓ | R2 key returned by `POST /blogs/upload-image` |
+| `content` | string | ✓ | 50 to 2000 words |
+| `slug` | string | — | Optional custom slug; auto-generated from title if omitted |
+| `category` | string | ✓ | Category label (for example: News, Research, Insights) |
+
+**Response `201`**
+```json
+{
+  "id": "uuid",
+  "title": "Blog title",
+  "slug": "blog-title",
+  "category": "Research",
+  "content": "...",
+  "status": "pending",
+  "coverImageKey": "prb/blogs/<userId>/<uuid>.png",
+  "coverImageUrl": "https://r2.example.com/...",
+  "author": {
+    "id": "uuid",
+    "name": "John Doe",
+    "email": "john@example.com"
+  },
+  "publishedDate": null,
+  "updatedDate": "2026-07-08T00:00:00.000Z",
+  "createdAt": "2026-07-08T00:00:00.000Z"
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `400` | Validation failed (title/content/category/coverImageKey/slug) |
+| `401` | Missing or invalid JWT cookie |
+| `403` | Authenticated but role is not allowed |
+
+---
+
+### `GET /blogs/my`
+
+List blogs created by the authenticated user (all statuses).
+
+**Auth:** JWT cookie required. Allowed roles: `general` | `granted` | `admin`.
+
+**Response `200`**
+```json
+[
+  {
+    "id": "uuid",
+    "title": "Blog title",
+    "slug": "blog-title",
+    "category": "Insights",
+    "status": "edited",
+    "coverImageUrl": "https://r2.example.com/...",
+    "publishedDate": null,
+    "updatedDate": "2026-07-08T00:00:00.000Z"
+  }
+]
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `401` | Missing or invalid JWT cookie |
+| `403` | Authenticated but role is not allowed |
+
+---
+
+### `PATCH /blogs/:id`
+
+Update a blog post.
+
+- Non-admin users can update only their own blogs.
+- Any user edit that changes blog fields sets status to `edited` and clears `publishedDate`.
+
+**Auth:** JWT cookie required. Allowed roles: `general` | `granted` | `admin`.
+
+**Path Parameters**
+
+| Parameter | Description |
+|-----------|-------------|
+| `id` | Blog UUID |
+
+**Request Body** `application/json` (all fields optional)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | string | Max 256 characters |
+| `coverImageKey` | string | R2 key from upload endpoint |
+| `content` | string | 50 to 2000 words |
+| `slug` | string | Unique slug |
+| `category` | string | Category label |
+
+**Response `200`**
+```json
+{
+  "id": "uuid",
+  "status": "edited",
+  "publishedDate": null,
+  "updatedDate": "2026-07-08T00:00:00.000Z"
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `400` | Validation failed |
+| `401` | Missing or invalid JWT cookie |
+| `403` | Not allowed to edit this blog |
+| `404` | Blog not found |
+
+---
+
+### `GET /blogs/admin/all`
+
+Admin list endpoint for moderation with pagination and optional status filter.
+
+**Auth:** JWT cookie + `admin` role required.
+
+**Query Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `status` | string | — | Filter by blog status |
+| `page` | number | `1` | Page number |
+| `limit` | number | `20` | Page size (max 100) |
+
+**Response `200`**
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "title": "Blog title",
+      "status": "pending",
+      "author": {
+        "id": "uuid",
+        "name": "John Doe",
+        "email": "john@example.com"
+      }
+    }
+  ],
+  "total": 42,
+  "page": 1,
+  "limit": 20
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `400` | Invalid `status` query value |
+| `401` | Missing or invalid JWT cookie |
+| `403` | Authenticated but not an admin |
+
+---
+
+### `PATCH /blogs/:id/status`
+
+Admin moderation endpoint to change blog status.
+
+**Auth:** JWT cookie + `admin` role required.
+
+**Path Parameters**
+
+| Parameter | Description |
+|-----------|-------------|
+| `id` | Blog UUID |
+
+**Request Body** `application/json`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `status` | string | ✓ | `pending` \| `approved` \| `archived` \| `edited` |
+
+When status is set to `approved`, `publishedDate` is set automatically.
+
+**Response `200`**
+```json
+{
+  "id": "uuid",
+  "status": "approved",
+  "publishedDate": "2026-07-08T00:00:00.000Z"
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `400` | Invalid status value |
+| `401` | Missing or invalid JWT cookie |
+| `403` | Authenticated but not an admin |
+| `404` | Blog not found |
+
+---
+
+### `GET /blogs`
+
+Public list of approved blogs only.
+
+**Auth:** None.
+
+**Response `200`**
+```json
+[
+  {
+    "id": "uuid",
+    "title": "Approved blog",
+    "slug": "approved-blog",
+    "status": "approved",
+    "coverImageUrl": "https://r2.example.com/...",
+    "publishedDate": "2026-07-08T00:00:00.000Z"
+  }
+]
+```
+
+---
+
+### `GET /blogs/:slug`
+
+Public details for one approved blog by slug.
+
+**Auth:** None.
+
+**Path Parameters**
+
+| Parameter | Description |
+|-----------|-------------|
+| `slug` | Blog slug |
+
+**Response `200`**
+```json
+{
+  "id": "uuid",
+  "title": "Approved blog",
+  "slug": "approved-blog",
+  "status": "approved",
+  "content": "...",
+  "coverImageUrl": "https://r2.example.com/...",
+  "author": {
+    "id": "uuid",
+    "name": "John Doe",
+    "email": "john@example.com"
+  },
+  "publishedDate": "2026-07-08T00:00:00.000Z",
+  "updatedDate": "2026-07-08T00:00:00.000Z"
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `404` | Blog not found (or not approved) |
+
