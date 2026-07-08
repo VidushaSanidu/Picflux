@@ -8,11 +8,12 @@ import { User } from '../entities/User';
 import { ValidatorReport } from '../entities/ValidatorReport';
 import { BurnRate } from '../entities/BurnRate';
 import { ContactInquiry } from '../entities/ContactInquiry';
+import { Blog } from '../entities/Blog';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
   url: process.env.DATABASE_URL,
-  entities: [Job, User, ValidatorReport, BurnRate, ContactInquiry],
+  entities: [Job, User, ValidatorReport, BurnRate, ContactInquiry, Blog],
   migrations: [__dirname + '/../migrations/**/*{.ts,.js}'],
   migrationsTableName: 'prb_typeorm_migrations',
   synchronize: false,
