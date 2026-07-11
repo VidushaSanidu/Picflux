@@ -12,6 +12,7 @@ import {
   updateMyBlogHandler,
   adminUpdateBlogStatusHandler,
   adminListBlogsHandler,
+  getBlogByIdHandler,
 } from '../controllers/blogs.controller';
 
 const router = Router();
@@ -25,6 +26,9 @@ router.patch('/:id', jwtAuth, requireRole(PrbUserRole.GENERAL, PrbUserRole.GRANT
 /** Admin moderation */
 router.get('/admin/all', jwtAuth, requireRole(PrbUserRole.ADMIN), adminListBlogsHandler);
 router.patch('/:id/status', jwtAuth, requireRole(PrbUserRole.ADMIN), adminUpdateBlogStatusHandler);
+
+/** Authenticated: full blog details (admin: any blog, others: their own if not approved) */
+router.get('/id/:id', jwtAuth, requireRole(PrbUserRole.GENERAL, PrbUserRole.GRANTED, PrbUserRole.ADMIN), getBlogByIdHandler);
 
 /** Public: only approved blogs */
 router.get('/', listApprovedBlogsHandler);

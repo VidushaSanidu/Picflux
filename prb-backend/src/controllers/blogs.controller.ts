@@ -8,6 +8,7 @@ import {
   updateBlog,
   updateBlogStatus,
   getAdminBlogs,
+  getBlogById,
 } from '../services/blogs.service';
 import { BlogStatus } from '../entities/Blog';
 import { HttpError } from '../utils/httpError';
@@ -92,6 +93,15 @@ export async function listApprovedBlogsHandler(_req: Request, res: Response, nex
 export async function getApprovedBlogBySlugHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const blog = await getApprovedBlogBySlug(req.params.slug);
+    res.json(blog);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getBlogByIdHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const blog = await getBlogById(req.params.id, req.user!.id, req.user!.role);
     res.json(blog);
   } catch (err) {
     next(err);

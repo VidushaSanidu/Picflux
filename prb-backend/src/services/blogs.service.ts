@@ -203,6 +203,27 @@ export async function getApprovedBlogBySlug(slug: string): Promise<object> {
   return mapBlogForPublic(blog);
 }
 
+export async function getBlogById(
+  blogId: string,
+  requestingUserId: string,
+  requestingUserRole: PrbUserRole,
+): Promise<object> {
+  const blog = await blogRepo().findOne({ where: { id: blogId }, relations: ['user'] });
+
+  if (!blog) {
+    throw new HttpError(404, 'Blog not found');
+  }
+
+  const isAdmin = requestingUserRole === PrbUserRole.ADMIN;
+  const isOwner = blog.userId === requestingUserId;
+
+  if (blog.status !== BlogStatus.APPROVED && !isAdmin && !isOwner) {
+    throw new HttpError(403, 'You do not have permission to view this blog');
+  }
+
+  return mapBlogForPublic(blog);
+}
+
 export async function listMyBlogs(userId: string): Promise<object[]> {
   const blogs = await blogRepo().find({
     where: { userId },
