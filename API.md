@@ -1629,3 +1629,131 @@ Public details for one approved blog by slug.
 |------|--------|
 | `404` | Blog not found (or not approved) |
 
+---
+
+## Admin API Key Routes
+
+Standalone API keys used to authenticate external/service calls. These have **no relation** to `prb_users` accounts and are managed entirely by admins.
+
+**Auth:** JWT cookie + `admin` role required for all routes in this section.
+
+---
+
+### `POST /api/v1/api-keys`
+
+Create a new API key. The raw key value is returned and can be viewed again via the list endpoint.
+
+**Request Body** `application/json`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `api_user` | string | ✓ | Label identifying who/what this key belongs to |
+
+**Response `201`**
+```json
+{
+  "id": "uuid",
+  "api_user": "name",
+  "api_key": "prb_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "created_date": "2026-07-13T00:00:00.000Z",
+  "updated_date": "2026-07-13T00:00:00.000Z",
+  "last_used": null,
+  "used_count": 0
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `400` | Missing or invalid `api_user` |
+| `401` | Missing or invalid JWT cookie |
+| `403` | Authenticated but not an admin |
+
+---
+
+### `GET /api/v1/api-keys`
+
+List all API keys, most recently created first.
+
+**Response `200`**
+```json
+[
+  {
+    "id": "uuid",
+    "api_user": "name",
+    "api_key": "prb_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "created_date": "2026-07-13T00:00:00.000Z",
+    "updated_date": "2026-07-13T00:00:00.000Z",
+    "last_used": "2026-07-13T00:00:00.000Z",
+    "used_count": 12
+  }
+]
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `401` | Missing or invalid JWT cookie |
+| `403` | Authenticated but not an admin |
+
+---
+
+### `PATCH /api/v1/api-keys/:id/regenerate`
+
+Regenerate the key value for an existing record. Resets `last_used` to `null` and `used_count` to `0`.
+
+**Path Parameters**
+
+| Parameter | Description |
+|-----------|-------------|
+| `id` | API key UUID |
+
+**Response `200`**
+```json
+{
+  "id": "uuid",
+  "api_user": "name",
+  "api_key": "prb_yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy",
+  "created_date": "2026-07-13T00:00:00.000Z",
+  "updated_date": "2026-07-13T00:00:00.000Z",
+  "last_used": null,
+  "used_count": 0
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `401` | Missing or invalid JWT cookie |
+| `403` | Authenticated but not an admin |
+| `404` | API key not found |
+
+---
+
+### `DELETE /api/v1/api-keys/:id`
+
+Delete an API key.
+
+**Path Parameters**
+
+| Parameter | Description |
+|-----------|-------------|
+| `id` | API key UUID |
+
+**Response `200`**
+```json
+{ "message": "API key deleted" }
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `401` | Missing or invalid JWT cookie |
+| `403` | Authenticated but not an admin |
+| `404` | API key not found |
+
+
