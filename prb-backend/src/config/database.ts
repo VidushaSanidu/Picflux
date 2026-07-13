@@ -11,11 +11,12 @@ import { ContactInquiry } from '../entities/ContactInquiry';
 import { Blog } from '../entities/Blog';
 import { ApiKey } from '../entities/ApiKey';
 import { Task } from '../entities/Task';
+import { Submit } from '../entities/Submit';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
   url: process.env.DATABASE_URL,
-  entities: [Job, User, ValidatorReport, BurnRate, ContactInquiry, Blog, ApiKey, Task],
+  entities: [Job, User, ValidatorReport, BurnRate, ContactInquiry, Blog, ApiKey, Task, Submit],
   migrations: [__dirname + '/../migrations/**/*{.ts,.js}'],
   migrationsTableName: 'prb_typeorm_migrations',
   synchronize: false,

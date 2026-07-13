@@ -11,6 +11,7 @@ import contactsRoutes from './routes/contacts.routes';
 import blogsRoutes from './routes/blogs.routes';
 import apiKeysRoutes from './routes/apiKeys.routes';
 import taskRoutes from './routes/task.routes';
+import submitsRoutes from './routes/submits.routes';
 import { HttpError } from './utils/httpError';
 
 export function createApp(): express.Application {
@@ -52,6 +53,7 @@ export function createApp(): express.Application {
   app.use('/api/v1', leaderboardRoutes);
   app.use('/api/v1/api-keys', apiKeysRoutes);
   app.use('/api/v1/task', taskRoutes);
+  app.use('/api/v1/submits', submitsRoutes);
   app.use('/contacts', contactsRoutes);
 
   // ─── 404 ──────────────────────────────────────────────────────────────────
