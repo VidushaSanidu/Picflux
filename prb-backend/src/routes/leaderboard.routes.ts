@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { validatorAuth, validatorAuthWithOptions } from '../middleware/validatorAuth';
+import { apiKeyDbAuth } from '../middleware/apiKeyDbAuth';
 import { apiKeyOrAdmin } from '../middleware/apiKeyOrAdmin';
 import {
   reportHandler,
@@ -13,13 +13,13 @@ import {
 
 const router = Router();
 
-// POST /api/v1/report — validators write (sr25519 signed)
-router.post('/report', validatorAuth, reportHandler);
+// POST /api/v1/report — validators write (API key authenticated)
+router.post('/report', apiKeyDbAuth, reportHandler);
 
-// POST /api/v1/last-weight-update — validators update only last_weight_update (sr25519 signed)
+// POST /api/v1/last-weight-update — validators update only last_weight_update (API key authenticated)
 router.post(
   '/last-weight-update',
-  validatorAuthWithOptions({ requireFullReport: false }),
+  apiKeyDbAuth,
   updateLastWeightUpdateHandler,
 );
 

@@ -1141,14 +1141,7 @@ Validator dashboards — each validator maintains their own view of the subnet, 
 
 ### `POST /api/v1/report`
 
-**Auth:** Wallet signature — no API key or JWT cookie. Validators sign the raw request body bytes with their sr25519 hotkey.
-
-**Required Headers**
-
-| Header | Description |
-|--------|-------------|
-| `X-Validator-Hotkey` | SS58-encoded validator hotkey |
-| `X-Signature` | `0x`-prefixed hex sr25519 signature of the exact raw JSON body bytes |
+**Auth:** `Authorization: Bearer <api-key>` required — validated against the `prb_api_keys` table (see [Admin API Key Routes](#admin-api-key-routes)).
 
 **Request Body** `application/json`
 
@@ -1200,10 +1193,39 @@ Validator dashboards — each validator maintains their own view of the subnet, 
 
 | Code | Reason |
 |------|--------|
-| `400` | Empty request body |
-| `401` | Missing headers, invalid signature, or timestamp older than `SIGNATURE_MAX_AGE_SECONDS` |
-| `403` | `X-Validator-Hotkey` does not match `body.validator_hotkey`, or hotkey is not a registered validator |
-| `422` | Invalid JSON body or missing required fields |
+| `401` | Missing or invalid API key |
+
+---
+
+### `POST /api/v1/last-weight-update`
+
+Update only the `lastWeightUpdate` field on a validator's stored report, without submitting a full report.
+
+**Auth:** `Authorization: Bearer <api-key>` required — validated against the `prb_api_keys` table (see [Admin API Key Routes](#admin-api-key-routes)).
+
+**Request Body** `application/json`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `validator_hotkey` | string | ✓ | SS58 hotkey of the validator whose report should be updated |
+| `last_weight_update` | number | ✓ | New last-weight-update value (finite number) |
+
+**Response `200`**
+```json
+{
+  "ok": true,
+  "validatorHotkey": "5F3sa2TJ...",
+  "lastWeightUpdate": 123.45
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `401` | Missing or invalid API key |
+| `404` | No report found for this validator |
+| `422` | Missing `validator_hotkey`, or `last_weight_update` is not a finite number |
 
 ---
 
