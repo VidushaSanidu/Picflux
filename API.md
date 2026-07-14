@@ -1338,6 +1338,144 @@ Set the burn rate.
 
 ---
 
+## Task & Submissions
+
+Single-row "current task" workflow, plus per-miner submissions gated by the task's status.
+
+**Task status values:** `open` | `disabled` | `validating`
+
+- While `open`: miners may submit their images via `POST /api/v1/submits`.
+- While `validating`: API key holders / admin may read submissions via `GET /api/v1/submits`.
+
+### `GET /api/v1/task`
+
+Return the current active task. Public — no authentication required.
+
+**Response `200`**
+```json
+{
+  "task_id": "task_48036",
+  "imageURL": "https://r2.example.com/...",
+  "hotkeys": [
+    { "minerId": 0, "hotkey": "5F3sa2TJ..." },
+    { "minerId": 1, "hotkey": "5GrwvaEF..." }
+  ]
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `404` | No task found |
+
+---
+
+### `POST /api/v1/task`
+
+Overwrite the single active task row. Ranks the given `hotkeys` array by index — each entry's array position becomes its `minerId`.
+
+**Auth:** `Authorization: Bearer <PRB_API_KEY>` **or** admin JWT cookie required.
+
+**Request Body** `application/json`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `task_id` | string | ✓ | Identifier for this task |
+| `imageURL` | string | ✓ | URL of the image to evaluate |
+| `status` | string | ✓ | `open` \| `disabled` \| `validating` |
+| `hotkeys` | string[] | ✓ | Ranked list of miner hotkeys (SS58); array index becomes `minerId` |
+
+**Response `201`**
+```json
+{
+  "task_id": "task_48036",
+  "imageURL": "https://r2.example.com/...",
+  "status": "open",
+  "hotkeys": [
+    { "minerId": 0, "hotkey": "5F3sa2TJ..." },
+    { "minerId": 1, "hotkey": "5GrwvaEF..." }
+  ],
+  "updatedAt": "2026-07-14T00:00:00.000Z"
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `400` | Missing/invalid `task_id`, `imageURL`, `status`, or `hotkeys` (must be a non-empty-string array) |
+| `401` | Missing or invalid API key / JWT cookie |
+
+---
+
+### `GET /api/v1/submits`
+
+List all miner submissions for the current task.
+
+**Auth:** `Authorization: Bearer <api-key>` (only while task status is `validating`) **or** admin JWT cookie (always, bypasses the status check).
+
+**Response `200`**
+```json
+[
+  {
+    "miner_uid": 0,
+    "imageURL": "https://r2.example.com/...",
+    "created_at": "2026-07-14T00:00:00.000Z"
+  }
+]
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `401` | Missing or invalid API key / admin JWT cookie |
+| `403` | Regular API key used while task status is not `validating` |
+
+---
+
+### `POST /api/v1/submits`
+
+Miner submission endpoint. Only accepted while the current task's status is `open`. The signing hotkey must be one of the ranked hotkeys set via `POST /api/v1/task`; its rank (`minerId`) is stored as `miner_uid`. Resubmitting overwrites the miner's previous submission.
+
+**Auth:** sr25519 signature — same scheme as the [leaderboard report endpoint](#post-apiv1report). The raw JSON body is signed with the miner's hotkey.
+
+**Headers**
+
+| Header | Required | Description |
+|--------|----------|--------------|
+| `X-Miner-Hotkey` | ✓ | SS58 hotkey that signed the request; must match `miner_hotkey` in the body |
+| `X-Signature` | ✓ | Hex-encoded sr25519 signature over the raw request body |
+
+**Request Body** `application/json`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `miner_hotkey` | string | ✓ | Must match `X-Miner-Hotkey` header exactly |
+| `timestamp` | string | ✓ | ISO 8601 datetime — used for replay protection (rejected if older than `SIGNATURE_MAX_AGE_SECONDS`) |
+| `imageURL` | string | ✓ | URL of the miner's submitted image |
+
+**Response `201`**
+```json
+{
+  "miner_uid": 0,
+  "imageURL": "https://r2.example.com/...",
+  "created_at": "2026-07-14T00:00:00.000Z"
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `400` | Missing/invalid `imageURL` |
+| `401` | Missing/invalid `X-Miner-Hotkey`/`X-Signature` header, invalid signature, empty body, or stale timestamp |
+| `403` | `X-Miner-Hotkey` doesn't match body `miner_hotkey`; task status is not `open`; or hotkey is not registered on the current task |
+| `422` | Missing required fields, or invalid `timestamp` format |
+
+---
+
 ## Blogs
 
 Blog publishing workflow for PRB:

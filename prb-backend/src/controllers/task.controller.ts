@@ -52,7 +52,6 @@ export async function getTaskHandler(_req: Request, res: Response, next: NextFun
     res.json({
       task_id: task.taskId,
       imageURL: task.imageUrl,
-      hotkeys: task.hotkeys,
     });
   } catch (err) {
     next(err);
