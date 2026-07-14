@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
 import passport from 'passport';
 import './config/passport'; // register strategies (side-effect)
 import jobsRoutes from './routes/jobs.routes';
@@ -16,6 +17,11 @@ import { HttpError } from './utils/httpError';
 
 export function createApp(): express.Application {
   const app = express();
+
+  // ─── HTTP request logging ────────────────────────────────────────────────
+  // 'combined' gives Apache-style access logs (IP, method, URL, status, size, referrer, user-agent).
+  // Use 'dev' (concise, colored) in non-production environments for readability.
+  app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
   // ─── CORS ─────────────────────────────────────────────────────────────────
   const allowedOrigins = (process.env.PRB_ALLOWED_ORIGINS ?? '').split(',').map(o => o.trim()).filter(Boolean);
