@@ -7,8 +7,6 @@ import {
 } from 'typeorm';
 
 export interface NetworkBlock {
-  total_miners: number;
-  available_miners: number;
   avg_score: number;
   avg_rmse: number;
   avg_norm: number;
@@ -17,9 +15,7 @@ export interface NetworkBlock {
 
 export interface MinerData {
   uid: number;
-  hotkey: string;
   coldkey: string;
-  incentive: number;
   avg_score: number;
   last_score: number;
   rmse: number;

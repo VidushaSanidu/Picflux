@@ -106,8 +106,6 @@ export async function leaderboardHandler(
       taskId: report.taskId,
       timestamp: report.validatorTimestamp.toISOString(),
       network: {
-        totalMiners: report.network.total_miners,
-        availableMiners: report.network.available_miners,
         avgScore: report.network.avg_score,
         avgRmse: report.network.avg_rmse,
         avgNorm: report.network.avg_norm,
@@ -117,9 +115,7 @@ export async function leaderboardHandler(
       miners: rankedMiners.map(({ rank, miner: m }) => ({
         rank,
         uid: m.uid,
-        hotkey: m.hotkey,
         coldkey: m.coldkey,
-        incentive: m.incentive,
         avgScore: m.avg_score,
         lastScore: m.last_score,
         rmse: m.rmse,

@@ -1157,8 +1157,6 @@ Validator dashboards — each validator maintains their own view of the subnet, 
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `total_miners` | number | Total miners on the subnet |
-| `available_miners` | number | Miners that responded |
 | `avg_score` | number | Network average score |
 | `avg_rmse` | number | Network average RMSE |
 | `avg_norm` | number | Network average norm |
@@ -1169,9 +1167,7 @@ Validator dashboards — each validator maintains their own view of the subnet, 
 | Field | Type | Description |
 |-------|------|-------------|
 | `uid` | number | Miner UID on the subnet |
-| `hotkey` | string | Miner hotkey (SS58) |
 | `coldkey` | string | Miner coldkey (SS58) |
-| `incentive` | number | Miner incentive score |
 | `avg_score` | number | Running average score |
 | `last_score` | number | Score from this evaluation |
 | `rmse` | number | Root mean squared error |
@@ -1263,8 +1259,6 @@ Retrieve the stored dashboard for a specific validator. Public — no authentica
   "timestamp": "2026-06-27T23:18:00.000Z",
   "lastWeightUpdate": 123.45,
   "network": {
-    "totalMiners": 58,
-    "availableMiners": 42,
     "avgScore": 0.579,
     "avgRmse": 0.0974,
     "avgNorm": 0.064,
@@ -1273,9 +1267,7 @@ Retrieve the stored dashboard for a specific validator. Public — no authentica
   "miners": [
     {
       "uid": 12,
-      "hotkey": "5GrwvaEF...",
       "coldkey": "5DAAnrj7...",
-      "incentive": 0.7,
       "avgScore": 0.9215,
       "lastScore": 0.9342,
       "rmse": 0.0841,
