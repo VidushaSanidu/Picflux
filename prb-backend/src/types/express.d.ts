@@ -18,5 +18,6 @@ declare module 'express-serve-static-core' {
     rawBody?: Buffer;
     validatorHotkey?: string;
     validatorStake?: number;
+    minerHotkey?: string;
   }
 }

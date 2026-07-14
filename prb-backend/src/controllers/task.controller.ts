@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { getTask, upsertTask } from '../services/task.service';
-import { TaskStatus } from '../entities/Task';
+import { TaskHotkey, TaskStatus } from '../entities/Task';
 import { HttpError } from '../utils/httpError';
 
 interface CreateTaskBody {
   task_id?: unknown;
   imageURL?: unknown;
   status?: unknown;
+  hotkeys?: unknown;
 }
 
 function asRequiredTrimmedString(value: unknown, field: string): string {
@@ -23,6 +24,23 @@ function asRequiredStatus(value: unknown): TaskStatus {
   return value as TaskStatus;
 }
 
+/**
+ * Validates the `hotkeys` array and ranks each entry by its position in the
+ * array — the array index becomes the `minerId`.
+ */
+function asHotkeys(value: unknown): TaskHotkey[] {
+  if (!Array.isArray(value)) {
+    throw new HttpError(400, 'hotkeys is required and must be an array');
+  }
+
+  return value.map((entry, index) => {
+    if (typeof entry !== 'string' || entry.trim().length === 0) {
+      throw new HttpError(400, `hotkeys[${index}] must be a non-empty string`);
+    }
+    return { minerId: index, hotkey: entry.trim() };
+  });
+}
+
 export async function getTaskHandler(_req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const task = await getTask();
@@ -34,6 +52,7 @@ export async function getTaskHandler(_req: Request, res: Response, next: NextFun
     res.json({
       task_id: task.taskId,
       imageURL: task.imageUrl,
+      hotkeys: task.hotkeys,
     });
   } catch (err) {
     next(err);
@@ -48,12 +67,14 @@ export async function createTaskHandler(req: Request, res: Response, next: NextF
       taskId: asRequiredTrimmedString(body.task_id, 'task_id'),
       imageUrl: asRequiredTrimmedString(body.imageURL, 'imageURL'),
       status: asRequiredStatus(body.status),
+      hotkeys: asHotkeys(body.hotkeys),
     });
 
     res.status(201).json({
       task_id: task.taskId,
       imageURL: task.imageUrl,
       status: task.status,
+      hotkeys: task.hotkeys,
       updatedAt: task.updatedAt,
     });
   } catch (err) {

@@ -6,6 +6,12 @@ export enum TaskStatus {
   VALIDATING = 'validating',
 }
 
+/** A single ranked hotkey entry. `minerId` is the hotkey's index (rank) in the submitted array. */
+export interface TaskHotkey {
+  minerId: number;
+  hotkey: string;
+}
+
 /**
  * Single-row table describing the current active task. `POST /api/v1/task`
  * always overwrites this one row rather than appending a new one.
@@ -23,6 +29,9 @@ export class Task {
 
   @Column({ type: 'enum', enum: TaskStatus, nullable: false })
   status!: TaskStatus;
+
+  @Column({ type: 'jsonb', default: () => "'[]'" })
+  hotkeys!: TaskHotkey[];
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;

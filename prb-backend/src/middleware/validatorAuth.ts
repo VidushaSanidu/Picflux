@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { MinerData, NetworkBlock } from '../entities/ValidatorReport';
+import { verifySr25519Signature } from '../utils/signature';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 const SIGNATURE_MAX_AGE_S = parseInt(
@@ -21,34 +22,6 @@ export interface ReportBody {
 
 export interface ValidatorAuthOptions {
   requireFullReport?: boolean;
-}
-
-// ─── sr25519 signature verification ──────────────────────────────────────────
-async function verifySignature(
-  hotkeySS58: string,
-  signatureHex: string,
-  bodyBytes: Buffer,
-): Promise<boolean> {
-  if (ALLOW_UNSIGNED_DEV) {
-    return true;
-  }
-
-  try {
-    const { sr25519Verify, decodeAddress, cryptoWaitReady } = await import(
-      '@polkadot/util-crypto'
-    );
-    const { hexToU8a } = await import('@polkadot/util');
-
-    await cryptoWaitReady();
-
-    const publicKey = decodeAddress(hotkeySS58);
-    const signature = hexToU8a(
-      signatureHex.startsWith('0x') ? signatureHex : `0x${signatureHex}`,
-    );
-    return sr25519Verify(bodyBytes, signature, publicKey);
-  } catch {
-    return false;
-  }
 }
 
 // ─── Metagraph validator registration check ───────────────────────────────────
@@ -97,7 +70,7 @@ export function validatorAuthWithOptions(options: ValidatorAuthOptions = {}) {
       return;
     }
 
-    const sigValid = await verifySignature(hotkey, signature, rawBody);
+    const sigValid = await verifySr25519Signature(hotkey, signature, rawBody);
     if (!sigValid) {
       res.status(401).json({ message: 'Invalid signature' });
       return;

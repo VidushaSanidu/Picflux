@@ -5,7 +5,7 @@ export class Submit {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'miner_uid', type: 'integer', nullable: false })
+  @Column({ name: 'miner_uid', type: 'integer', nullable: false, unique: true })
   minerUid!: number;
 
   @Column({ name: 'image_url', type: 'varchar', nullable: false })
