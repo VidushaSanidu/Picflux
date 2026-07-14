@@ -29,3 +29,16 @@ export async function upsertTask(input: {
 
   return repo.save(task);
 }
+
+/** Updates only the `status` field of the existing single task row. Returns `null` if no task exists yet. */
+export async function updateTaskStatus(status: TaskStatus): Promise<Task | null> {
+  const repo = AppDataSource.getRepository(Task);
+  const [existing] = await repo.find({ take: 1 });
+
+  if (!existing) {
+    return null;
+  }
+
+  existing.status = status;
+  return repo.save(existing);
+}

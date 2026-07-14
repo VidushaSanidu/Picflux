@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { getTask, upsertTask } from '../services/task.service';
+import { getTask, upsertTask, updateTaskStatus } from '../services/task.service';
 import { TaskHotkey, TaskStatus } from '../entities/Task';
 import { HttpError } from '../utils/httpError';
 
@@ -8,6 +8,10 @@ interface CreateTaskBody {
   imageURL?: unknown;
   status?: unknown;
   hotkeys?: unknown;
+}
+
+interface UpdateTaskStatusBody {
+  status?: unknown;
 }
 
 function asRequiredTrimmedString(value: unknown, field: string): string {
@@ -75,6 +79,27 @@ export async function createTaskHandler(req: Request, res: Response, next: NextF
       status: task.status,
       hotkeys: task.hotkeys,
       updatedAt: task.updatedAt,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/** PATCH /api/v1/task/status — admin only; updates only the task's status. */
+export async function updateTaskStatusHandler(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const body = req.body as UpdateTaskStatusBody;
+    const status = asRequiredStatus(body.status);
+
+    const task = await updateTaskStatus(status);
+    if (!task) {
+      throw new HttpError(404, 'No task found');
+    }
+
+    res.json({
+      task_id: task.taskId,
+      imageURL: task.imageUrl,
+      status: task.status
     });
   } catch (err) {
     next(err);
