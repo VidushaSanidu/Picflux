@@ -1468,6 +1468,39 @@ Miner submission endpoint. Only accepted while the current task's status is `ope
 
 ---
 
+### `POST /api/v1/submits/admin`
+
+Same behavior as `POST /api/v1/submits` (creates or updates the submission for the miner matching `hotkey` on the current task, keyed by rank/`miner_uid`), but authenticated as an admin instead of requiring a miner signature. Not gated by task status.
+
+**Auth:** `Authorization: Bearer <PRB_API_KEY>` **or** admin JWT cookie required.
+
+**Request Body** `application/json`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `hotkey` | string | ✓ | Miner hotkey (SS58); must be one of the ranked hotkeys set via `POST /api/v1/task` |
+| `imageURL` | string | ✓ | URL of the miner's submitted image |
+
+**Response `201`**
+```json
+{
+  "miner_uid": 0,
+  "imageURL": "https://r2.example.com/...",
+  "created_at": "2026-07-14T00:00:00.000Z"
+}
+```
+
+**Errors**
+
+| Code | Reason |
+|------|--------|
+| `400` | Missing/invalid `hotkey` or `imageURL` |
+| `401` | Missing or invalid API key / JWT cookie |
+| `403` | Hotkey is not registered on the current task |
+| `404` | No task found |
+
+---
+
 ## Blogs
 
 Blog publishing workflow for PRB:
